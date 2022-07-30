@@ -1,5 +1,3 @@
-package me.orineko.hologramsnametags.tools;
-
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;

@@ -1,4 +1,5 @@
-import com.cryptomorin.xseries.XItemStack;
+package me.orineko.pluginspigottools;
+
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -40,7 +41,7 @@ import java.util.stream.Collectors;
  * </pre>
  * Class Extends {@link GuiManager} Example:
  * <pre>
- * public class NpcGui extends GuiManager {
+ * public class NpcGui extends me.orineko.pluginspigottools.GuiManager {
  *
  *   public NpcGui() {
  *     super(StorageData.getGuiFile(), null);
@@ -49,7 +50,7 @@ import java.util.stream.Collectors;
  *   public enum Key{
  *     KEY_B, KEY_C;
  *
- *     public ItemManager getItemManager(@Nonnull GuiManager guiManager){
+ *     public ItemManager getItemManager(@Nonnull me.orineko.pluginspigottools.GuiManager guiManager){
  *     return guiManager.getItemManager(name());
  *     }
  *   }
@@ -59,7 +60,7 @@ import java.util.stream.Collectors;
  *     if(itemManager == null) return new ItemStack(Material.AIR);
  *     HashMap<~String, String> map = new HashMap<>();
  *     map.put("<~player>", player.getName());
- *     return MethodDefault.getItemReplaceValue(itemManager.getItemStack().clone(), map);
+ *     return me.orineko.pluginspigottools.MethodDefault.getItemReplaceValue(itemManager.getItemStack().clone(), map);
  *   }
  *
  * }
@@ -77,7 +78,7 @@ public abstract class GuiManager {
 
     /**
      * <pre>
-     * Create a constructor for GuiManager.
+     * Create a constructor for me.orineko.pluginspigottools.GuiManager.
      * </pre>
      *
      * @param file            the file for inventory management.

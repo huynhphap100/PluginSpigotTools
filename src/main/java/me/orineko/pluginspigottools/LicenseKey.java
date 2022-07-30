@@ -1,3 +1,5 @@
+package me.orineko.pluginspigottools;
+
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.json.simple.JSONObject;

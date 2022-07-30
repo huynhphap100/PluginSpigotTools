@@ -1,3 +1,5 @@
+package me.orineko.pluginspigottools;
+
 import com.cryptomorin.xseries.XMaterial;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;

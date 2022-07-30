@@ -1,5 +1,3 @@
-package me.orineko.hologramsnametags.tools;
-
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.json.simple.JSONObject;

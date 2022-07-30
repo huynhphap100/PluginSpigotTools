@@ -1,5 +1,3 @@
-package me.orineko.hologramsnametags.tools;
-
 import com.cryptomorin.xseries.XMaterial;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -18,10 +16,23 @@ import java.util.stream.Collectors;
 
 public class MethodDefault {
 
+    /**
+     * Check a string can be converted to a double type.
+     *
+     * @param text the text to check.
+     * @return True if it can be converted, false otherwise.
+     */
     public static boolean checkFormatNumber(@Nonnull String text) {
         return text.trim().matches("^-?\\d+(\\.\\d+)?$");
     }
 
+    /**
+     * Convert a string to a double type.
+     *
+     * @param text the text to convert.
+     * @param valueDefault the value if it can't be converted.
+     * @return the number if it can be converted, otherwise it's valueDefault.
+     */
     public static double formatNumber(@Nonnull String text, double valueDefault){
         return checkFormatNumber(text) ? Double.parseDouble(text) : valueDefault;
     }

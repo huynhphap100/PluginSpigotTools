@@ -1,3 +1,5 @@
+package me.orineko.pluginspigottools;
+
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -42,7 +44,7 @@ public class FileManager extends YamlConfiguration{
     /**
      * Create a file with fileName
      *
-     * @return FileManager
+     * @return me.orineko.pluginspigottools.FileManager
      */
     @SuppressWarnings("all")
     public FileManager createFile() {
@@ -61,7 +63,7 @@ public class FileManager extends YamlConfiguration{
     /**
      * Copy everything in resource file to the plugin file
      *
-     * @return FileManager
+     * @return me.orineko.pluginspigottools.FileManager
      * @throws IllegalArgumentException if the resource path is null, empty, or points to a nonexistent resource
      */
     public FileManager copyDefault() {
@@ -74,7 +76,7 @@ public class FileManager extends YamlConfiguration{
     /**
      * Reload the plugin file
      *
-     * @return FileManager
+     * @return me.orineko.pluginspigottools.FileManager
      */
     public FileManager reload() {
         if (file == null) this.file = new File(getPathFile());

@@ -57,7 +57,7 @@ but it also includes numerous extra methods to help developers design their plug
 <dependency>
     <groupId>me.orineko</groupId>
     <artifactId>Tools</artifactId>
-    <version>version</version>
+    <version>1.0</version>
 </dependency>
 ```
 >>>>>>> f6eaff9 (Create README.md)

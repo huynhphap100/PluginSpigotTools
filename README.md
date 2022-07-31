@@ -16,8 +16,9 @@ but it also includes numerous extra methods to help developers design their plug
 ### Getting Started
 
 1. Use command `git clone https://github.com/huynhphap100/PluginSpigotTools.git` at terminal.
-2. Open project PluginSpigotTools and use this command `git clone https://github.com/CryptoMorin/XSeries.git` at terminal (if you need use XSeries). See project XSeries here [XSeries](https://github.com/CryptoMorin/XSeries)
-3. Use command `mvn install` at terminal to install a repository.
+2. Open project PluginSpigotTools
+3. Use this command `git clone https://github.com/CryptoMorin/XSeries.git` at terminal (if you need use XSeries). See project XSeries here [XSeries](https://github.com/CryptoMorin/XSeries)
+4. Use command `mvn install` at terminal to install a repository.
 
 #### Maven
 ```xml

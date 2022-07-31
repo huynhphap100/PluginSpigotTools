@@ -137,7 +137,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>me.orineko</groupId>
-    <artifactId>ManagePluginTools</artifactId>
+    <artifactId>Tools</artifactId>
     <version>1.0</version>
 
     <properties>

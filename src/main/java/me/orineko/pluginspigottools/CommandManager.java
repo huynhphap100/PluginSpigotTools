@@ -256,6 +256,11 @@ public abstract class CommandManager extends Command implements CommandExecutor,
         return true;
     }
 
+    public void sendMessageSenderPlayer(@Nonnull CommandSender sender, @Nonnull Player player, @Nonnull String text){
+        if(!(sender instanceof Player) || !sender.getName().equals(player.getName())) sender.sendMessage(text);
+        player.sendMessage(text);
+    }
+
     protected boolean checkEqualArgs(@Nonnull String[] args, int indicate, @Nonnull String... cmdList){
         if(indicate >= args.length) return false;
         String cmd = args[indicate].toUpperCase();

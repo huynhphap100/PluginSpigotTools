@@ -1,6 +1,7 @@
 package me.orineko.pluginspigottools;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.Inventory;
@@ -192,6 +193,16 @@ public abstract class GuiManager {
     @Nullable
     public ItemManager getItemManager(int slot) {
         return itemManagerList.stream().filter(i -> i.getSlotList().contains(slot)).findAny().orElse(null);
+    }
+
+    /**
+     * Set all {@link ItemManager} slots to an item.
+     *
+     * @param itemManager the {@link ItemManager} to get list of slots.
+     * @param item the item to be converted.
+     */
+    public void convertAllItemManager(ItemManager itemManager, ItemStack item){
+        itemManager.getSlotList().forEach(i -> inventory.setItem(i, item));
     }
 
     public static class ItemManager {

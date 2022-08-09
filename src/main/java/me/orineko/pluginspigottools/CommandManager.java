@@ -109,9 +109,6 @@ public abstract class CommandManager extends Command implements CommandExecutor,
     protected void addTabComplete(int indice, @Nonnull String[] beforeText, @Nonnull List<String> arg){
         addTabComplete(indice, null, beforeText, arg);
     }
-    protected void addTabComplete(int indice, @Nonnull List<String> beforeText, @Nonnull List<String> arg){
-        addTabComplete(indice, null, beforeText.toArray(new String[0]), arg);
-    }
     protected void addTabComplete(int indice, @Nonnull String beforeText, @Nonnull List<String> arg){
         addTabComplete(indice, null, new String[]{beforeText}, arg);
     }
@@ -217,11 +214,12 @@ public abstract class CommandManager extends Command implements CommandExecutor,
 
     @Override
     public boolean onCommand(@Nonnull CommandSender sender, @Nonnull Command cmd, @Nonnull String label, @Nonnull String[] args) {
+        if(!isUsingMainCommand(cmd)) return true;
         executeCommand(sender, cmd, label, args);
         return true;
     }
 
-    protected boolean isUsingMainCommand(@Nonnull Command cmd){
+    private boolean isUsingMainCommand(@Nonnull Command cmd){
         return cmd.getName().equalsIgnoreCase(super.getName()) ||
                 super.getAliases().stream().anyMatch(a -> cmd.getName().equalsIgnoreCase(a));
     }
@@ -231,8 +229,8 @@ public abstract class CommandManager extends Command implements CommandExecutor,
         if(sender instanceof Player) return (Player) sender;
         return null;
     }
-	
-	protected boolean checkNoPermission(@Nonnull CommandSender sender, @Nonnull String permission, @Nonnull String message) {
+
+    protected boolean checkNoPermission(@Nonnull CommandSender sender, @Nonnull String permission, @Nonnull String message) {
         if (!(sender instanceof Player) || sender.hasPermission(permission) || sender.isOp()) return false;
         sender.sendMessage(message);
         return true;

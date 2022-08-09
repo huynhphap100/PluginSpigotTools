@@ -1,17 +1,19 @@
 package me.orineko.pluginspigottools;
 
+import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -68,9 +70,13 @@ public class MethodDefault {
 
     public static ItemStack getItemStackByFile(@Nonnull FileConfiguration file, @Nonnull String path){
         String typeItem = file.getString(path+".Type", "");
+        ItemStack itemStack = getItemAllVersion(typeItem.toUpperCase());
+        return getItemStackByFileAndItem(file, path, itemStack);
+    }
+
+    public static ItemStack getItemStackByFileAndItem(@Nonnull FileConfiguration file, @Nonnull String path, @Nonnull ItemStack itemStack){
         String nameItem = file.getString(path+".Name", "");
         List<String> loreItem = file.getStringList(path+".Lore");
-        ItemStack itemStack = getItemAllVersion(typeItem.toUpperCase());
         ItemMeta meta = itemStack.getItemMeta();
         if(meta == null) return itemStack;
         meta.setDisplayName(formatColor(nameItem));
@@ -101,6 +107,80 @@ public class MethodDefault {
         meta.setLore(lore);
         itemStack.setItemMeta(meta);
         return itemStack;
+    }
+
+    @SuppressWarnings("deprecation")
+    public static Collection<ItemStack> getDropItem(@Nonnull Player player, @Nonnull Block block) {
+        ItemStack itemHold = player.getItemInHand();
+        return getDropItem(itemHold, block);
+    }
+
+    public static Collection<ItemStack> getDropItem(@Nonnull ItemStack itemHand, @Nonnull Block block) {
+        Collection<ItemStack> itemsDrop = block.getDrops(itemHand);
+        String version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
+        switch (version) {
+            case "v1_8_R1":
+            case "v1_8_R2":
+            case "v1_8_R3":
+            case "v1_9_R1":
+            case "v1_9_R2":
+            case "v1_10_R1":
+            case "v1_11_R1":
+            case "v1_12_R1":
+            case "v1_13_R1":
+            case "v1_13_R2":
+                List<String> itemFortuneList = Arrays.asList("COAL", "DIAMOND", "EMERALD", "GOLD_NUGGET",
+                        "QUARTZ", "LAPIS_LAZULI", "REDSTONE", "GLOWSTONE_DUST", "MELON_SLICE", "NETHER_WART",
+                        "PRISMARINE");
+                List<Material> matFortuneList = itemFortuneList.stream()
+                        .map(XMaterial::matchXMaterial)
+                        .filter(Optional::isPresent)
+                        .map(i -> i.get().parseMaterial())
+                        .collect(Collectors.toList());
+                Collection<ItemStack> itemsNew = new ArrayList<>();
+                Optional<XEnchantment> xSilkTouch = XEnchantment.matchXEnchantment("SILK_TOUCH");
+                Optional<XEnchantment> xFortune = XEnchantment.matchXEnchantment("LOOT_BONUS_BLOCKS");
+                Enchantment silkTouch = null;
+                Enchantment fortune = null;
+                if (xSilkTouch.isPresent()) silkTouch = xSilkTouch.get().getEnchant();
+                if (xFortune.isPresent()) fortune = xFortune.get().getEnchant();
+
+                ItemMeta meta = itemHand.getItemMeta();
+                if (meta == null) return itemsDrop;
+                boolean hasSilkTouch = silkTouch != null && meta.hasEnchant(silkTouch);
+                boolean hasFortune = fortune != null && meta.hasEnchant(fortune);
+                if (hasSilkTouch) {
+                    itemsNew.add(new ItemStack(block.getType()));
+                    return itemsNew;
+                } else if (hasFortune) {
+                    int value = meta.getEnchantLevel(fortune);
+                    itemsDrop.forEach(i -> {
+                        if (!matFortuneList.contains(i.getType())) {
+                            itemsNew.add(i);
+                            return;
+                        }
+                        int bonus = (int) (Math.random() * (value + 2)) - 1;
+                        if (bonus < 0) bonus = 0;
+                        long total = i.getAmount() + bonus;
+                        while (total > 0) {
+                            if (total > 64) {
+                                i.setAmount(64);
+                                itemsNew.add(i);
+                                total -= 64;
+                            } else {
+                                i.setAmount((int) total);
+                                itemsNew.add(i);
+                                total = 0;
+                            }
+                        }
+                    });
+                    return itemsNew;
+                }
+                break;
+            default:
+                return itemsDrop;
+        }
+        return itemsDrop;
     }
 
 }

@@ -102,11 +102,9 @@ public abstract class GuiManager {
      * @return True if the refresh is complete, otherwise it will return false
      */
     public boolean renew() {
-        String title = this.file.getString("Title", "");
         List<String> format = this.file.getStringList("Format");
-        int line = Math.min(format.size(), 6);
 
-        this.inventory = Bukkit.createInventory(getInventory().getHolder(), line * 9, title);
+        this.inventory.clear();
         this.itemManagerList.clear();
 
         format = format.stream().map(StringBuilder::new).map(s -> {

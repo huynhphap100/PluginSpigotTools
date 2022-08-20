@@ -2,6 +2,7 @@ package me.orineko.pluginspigottools;
 
 import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.messages.Titles;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -107,6 +108,22 @@ public class MethodDefault {
         meta.setLore(lore);
         itemStack.setItemMeta(meta);
         return itemStack;
+    }
+
+    public static void addItemInventory(@Nonnull Player player, @Nonnull ItemStack itemStack){
+        if(player.getInventory().firstEmpty() != -1){
+            player.getInventory().addItem(itemStack);
+        } else {
+            player.getWorld().dropItemNaturally(player.getLocation(), itemStack);
+        }
+    }
+
+    public static void sendTitleAllVersion(Player player, String title, String subTitle) {
+        try {
+            player.sendTitle(title, subTitle, 5, 10, 5);
+        } catch (Exception ignore) {
+            Titles.sendTitle(player, 5, 10, 5, title, subTitle);
+        }
     }
 
     @SuppressWarnings("deprecation")

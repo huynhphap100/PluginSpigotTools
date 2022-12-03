@@ -12,7 +12,7 @@ public class VaultSetup {
     @Nullable
     public static VaultManager setupVault(){
         Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("Vault");
-        if(plugin == null) vaultManager = new VaultManager();
+        if(plugin != null) vaultManager = new VaultManager();
         return vaultManager;
     }
 

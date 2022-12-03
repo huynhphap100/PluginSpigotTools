@@ -3,6 +3,8 @@ package me.orineko.pluginspigottools;
 import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.messages.Titles;
+import net.objecthunter.exp4j.Expression;
+import net.objecthunter.exp4j.ExpressionBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -56,8 +58,30 @@ public class MethodDefault {
         return ChatColor.translateAlternateColorCodes('&', text);
     }
 
-    public static ItemStack getItemAllVersion(String material) {
-        if(material == null || material.isEmpty()) return new ItemStack(Material.AIR);
+    public static List<String> formatColor(@Nonnull List<String> textList){
+        return textList.stream().map(MethodDefault::formatColor).collect(Collectors.toList());
+    }
+
+    public static int randomInt(int min, int max){
+        return new Random().nextInt((max-min)+1)+min;
+    }
+
+    public static double randomDouble(double min, double max){
+        return min+(max-min)*(new Random().nextDouble());
+    }
+
+    public static double stringCalculate(@Nonnull String text){
+        return new ExpressionBuilder(text).build().evaluate();
+    }
+
+    public static boolean checkItemIsDefault(@Nonnull ItemStack itemStack){
+        ItemMeta meta = itemStack.getItemMeta();
+        if(meta == null) return true;
+        return !meta.hasDisplayName() && !meta.hasLore();
+    }
+
+    public static ItemStack getItemAllVersion(@Nonnull String material) {
+        if(material.isEmpty()) return new ItemStack(Material.AIR);
         material = material.toUpperCase();
         try {
             return new ItemStack(Material.valueOf(material));

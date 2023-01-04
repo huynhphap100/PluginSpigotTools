@@ -135,7 +135,7 @@ public abstract class CommandManager extends Command {
     }
 
     private boolean getPlayerHasPermission(@Nonnull DataCommand dataCommand, @Nonnull CommandSender sender, @Nonnull String[] args) {
-        if (sender instanceof Player || sender.isOp()) return true;
+        if (sender instanceof Player && sender.isOp()) return true;
         return dataCommand.getPermissionList().stream().anyMatch(sender::hasPermission);
     }
 

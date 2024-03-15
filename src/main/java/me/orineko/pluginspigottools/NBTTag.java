@@ -16,38 +16,37 @@ public class NBTTag {
             Class<?> nbtTagCompoundClass = getNBTTagCompoundClass();
             Object itemCraft = craftItemStackClass.getMethod("asNMSCopy", ItemStack.class).invoke(null, item);
             String version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
+            int numVer = (int) MethodDefault.formatNumber(version.split("_")[1], 0);
+            int numVer2 = (int) MethodDefault.formatNumber(version.split("_")[2], 0);
             Object tag;
-            switch (version) {
-                case "v1_8_R1":
-                case "v1_8_R2":
-                case "v1_8_R3":
-                case "v1_9_R1":
-                case "v1_9_R2":
-                case "v1_10_R1":
-                case "v1_11_R1":
-                case "v1_12_R1":
-                case "v1_13_R1":
-                case "v1_13_R2":
-                case "v1_14_R1":
-                case "v1_15_R1":
-                case "v1_16_R1":
-                case "v1_16_R2":
-                case "v1_16_R3":
-                case "v1_17_R1":
-                    tag = ((boolean) itemCraft.getClass().getMethod("hasTag").invoke(itemCraft)) ?
-                            itemCraft.getClass().getMethod("getTag").invoke(itemCraft) :
-                            nbtTagCompoundClass.newInstance();
-                    if (tag == null) return item;
-                    tag.getClass().getMethod("setString", String.class, String.class).invoke(tag, key, value);
-                    itemCraft.getClass().getMethod("setTag", nbtTagCompoundClass).invoke(itemCraft, tag);
-                    break;
-                default:
-                    tag = ((boolean) itemCraft.getClass().getMethod("s").invoke(itemCraft)) ?
-                            itemCraft.getClass().getMethod("t").invoke(itemCraft) :
-                            nbtTagCompoundClass.newInstance();
-                    if (tag == null) return item;
-                    tag.getClass().getMethod("a", String.class, String.class).invoke(tag, key, value);
-                    itemCraft.getClass().getMethod("c", nbtTagCompoundClass).invoke(itemCraft, tag);
+            if(numVer >= 8 && numVer <= 17) {
+                tag = ((boolean) itemCraft.getClass().getMethod("hasTag").invoke(itemCraft)) ?
+                        itemCraft.getClass().getMethod("getTag").invoke(itemCraft) :
+                        nbtTagCompoundClass.newInstance();
+                if (tag == null) return item;
+                tag.getClass().getMethod("setString", String.class, String.class).invoke(tag, key, value);
+                itemCraft.getClass().getMethod("setTag", nbtTagCompoundClass).invoke(itemCraft, tag);
+            } else if (numVer == 18) {
+                tag = ((boolean) itemCraft.getClass().getMethod("s").invoke(itemCraft)) ?
+                        itemCraft.getClass().getMethod("t").invoke(itemCraft) :
+                        nbtTagCompoundClass.newInstance();
+                if (tag == null) return item;
+                tag.getClass().getMethod("a", String.class, String.class).invoke(tag, key, value);
+                itemCraft.getClass().getMethod("c", nbtTagCompoundClass).invoke(itemCraft, tag);
+            } else if (numVer == 19) {
+                tag = ((boolean) itemCraft.getClass().getMethod("t").invoke(itemCraft)) ?
+                        itemCraft.getClass().getMethod("u").invoke(itemCraft) :
+                        nbtTagCompoundClass.newInstance();
+                if (tag == null) return item;
+                tag.getClass().getMethod("a", String.class, String.class).invoke(tag, key, value);
+                itemCraft.getClass().getMethod("c", nbtTagCompoundClass).invoke(itemCraft, tag);
+            } else {
+                tag = ((boolean) itemCraft.getClass().getMethod("u").invoke(itemCraft)) ?
+                        itemCraft.getClass().getMethod("w").invoke(itemCraft) :
+                        nbtTagCompoundClass.newInstance();
+                if (tag == null) return item;
+                tag.getClass().getMethod("a", String.class, String.class).invoke(tag, key, value);
+                itemCraft.getClass().getMethod("c", nbtTagCompoundClass).invoke(itemCraft, tag);
             }
             return (ItemStack) craftItemStackClass.getMethod("asBukkitCopy", itemStackClass).invoke(null, itemCraft);
         } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException e) {
@@ -63,38 +62,36 @@ public class NBTTag {
             Class<?> nbtTagCompoundClass = getNBTTagCompoundClass();
             Object itemCraft = craftItemStackClass.getMethod("asNMSCopy", ItemStack.class).invoke(null, item);
             String version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
+            int numVer = (int) MethodDefault.formatNumber(version.split("_")[1], 0);
             Object tag;
-            switch (version) {
-                case "v1_8_R1":
-                case "v1_8_R2":
-                case "v1_8_R3":
-                case "v1_9_R1":
-                case "v1_9_R2":
-                case "v1_10_R1":
-                case "v1_11_R1":
-                case "v1_12_R1":
-                case "v1_13_R1":
-                case "v1_13_R2":
-                case "v1_14_R1":
-                case "v1_15_R1":
-                case "v1_16_R1":
-                case "v1_16_R2":
-                case "v1_16_R3":
-                case "v1_17_R1":
-                    tag = ((boolean) itemCraft.getClass().getMethod("hasTag").invoke(itemCraft)) ?
-                            itemCraft.getClass().getMethod("getTag").invoke(itemCraft) :
-                            nbtTagCompoundClass.newInstance();
-                    if (tag == null) return item;
-                    tag.getClass().getMethod("remove", String.class).invoke(tag, key);
-                    itemCraft.getClass().getMethod("setTag", nbtTagCompoundClass).invoke(itemCraft, tag);
-                    break;
-                default:
-                    tag = ((boolean) itemCraft.getClass().getMethod("s").invoke(itemCraft)) ?
-                            itemCraft.getClass().getMethod("t").invoke(itemCraft) :
-                            nbtTagCompoundClass.newInstance();
-                    if (tag == null) return item;
-                    tag.getClass().getMethod("r", String.class).invoke(tag, key);
-                    itemCraft.getClass().getMethod("c", nbtTagCompoundClass).invoke(itemCraft, tag);
+            if(numVer >= 8 && numVer <= 17) {
+                tag = ((boolean) itemCraft.getClass().getMethod("hasTag").invoke(itemCraft)) ?
+                        itemCraft.getClass().getMethod("getTag").invoke(itemCraft) :
+                        nbtTagCompoundClass.newInstance();
+                if (tag == null) return item;
+                tag.getClass().getMethod("remove", String.class).invoke(tag, key);
+                itemCraft.getClass().getMethod("setTag", nbtTagCompoundClass).invoke(itemCraft, tag);
+            } else if (numVer == 18) {
+                tag = ((boolean) itemCraft.getClass().getMethod("s").invoke(itemCraft)) ?
+                        itemCraft.getClass().getMethod("t").invoke(itemCraft) :
+                        nbtTagCompoundClass.newInstance();
+                if (tag == null) return item;
+                tag.getClass().getMethod("r", String.class).invoke(tag, key);
+                itemCraft.getClass().getMethod("c", nbtTagCompoundClass).invoke(itemCraft, tag);
+            } else if (numVer == 19) {
+                tag = ((boolean) itemCraft.getClass().getMethod("t").invoke(itemCraft)) ?
+                        itemCraft.getClass().getMethod("u").invoke(itemCraft) :
+                        nbtTagCompoundClass.newInstance();
+                if (tag == null) return item;
+                tag.getClass().getMethod("r", String.class).invoke(tag, key);
+                itemCraft.getClass().getMethod("c", nbtTagCompoundClass).invoke(itemCraft, tag);
+            } else {
+                tag = ((boolean) itemCraft.getClass().getMethod("u").invoke(itemCraft)) ?
+                        itemCraft.getClass().getMethod("w").invoke(itemCraft) :
+                        nbtTagCompoundClass.newInstance();
+                if (tag == null) return item;
+                tag.getClass().getMethod("r", String.class).invoke(tag, key);
+                itemCraft.getClass().getMethod("c", nbtTagCompoundClass).invoke(itemCraft, tag);
             }
             return (ItemStack) craftItemStackClass.getMethod("asBukkitCopy", itemStackClass).invoke(null, itemCraft);
         } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException e) {
@@ -110,35 +107,32 @@ public class NBTTag {
             Class<?> nbtTagCompoundClass = getNBTTagCompoundClass();
             Object itemCraft = craftItemStackClass.getMethod("asNMSCopy", ItemStack.class).invoke(null, item);
             String version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
+            int numVer = (int) MethodDefault.formatNumber(version.split("_")[1], 0);
             Object tag;
-            switch (version) {
-                case "v1_8_R1":
-                case "v1_8_R2":
-                case "v1_8_R3":
-                case "v1_9_R1":
-                case "v1_9_R2":
-                case "v1_10_R1":
-                case "v1_11_R1":
-                case "v1_12_R1":
-                case "v1_13_R1":
-                case "v1_13_R2":
-                case "v1_14_R1":
-                case "v1_15_R1":
-                case "v1_16_R1":
-                case "v1_16_R2":
-                case "v1_16_R3":
-                case "v1_17_R1":
-                    tag = ((boolean) itemCraft.getClass().getMethod("hasTag").invoke(itemCraft)) ?
-                            itemCraft.getClass().getMethod("getTag").invoke(itemCraft) :
-                            nbtTagCompoundClass.newInstance();
-                    if (tag == null) return null;
-                    return (String) tag.getClass().getMethod("getString", String.class).invoke(tag, key);
-                default:
-                    tag = ((boolean) itemCraft.getClass().getMethod("s").invoke(itemCraft)) ?
-                            itemCraft.getClass().getMethod("t").invoke(itemCraft) :
+            if(numVer >= 8 && numVer <= 17) {
+                tag = ((boolean) itemCraft.getClass().getMethod("hasTag").invoke(itemCraft)) ?
+                        itemCraft.getClass().getMethod("getTag").invoke(itemCraft) :
+                        nbtTagCompoundClass.newInstance();
+                if (tag == null) return null;
+                return (String) tag.getClass().getMethod("getString", String.class).invoke(tag, key);
+            } else if (numVer == 18) {
+                tag = ((boolean) itemCraft.getClass().getMethod("s").invoke(itemCraft)) ?
+                        itemCraft.getClass().getMethod("t").invoke(itemCraft) :
+                        nbtTagCompoundClass.newInstance();
+                if (tag == null) return null;
+                return (String) tag.getClass().getMethod("l", String.class).invoke(tag, key);
+            } else if (numVer == 19) {
+                    tag = ((boolean) itemCraft.getClass().getMethod("t").invoke(itemCraft)) ?
+                            itemCraft.getClass().getMethod("u").invoke(itemCraft) :
                             nbtTagCompoundClass.newInstance();
                     if (tag == null) return null;
                     return (String) tag.getClass().getMethod("l", String.class).invoke(tag, key);
+            } else {
+                tag = ((boolean) itemCraft.getClass().getMethod("u").invoke(itemCraft)) ?
+                        itemCraft.getClass().getMethod("w").invoke(itemCraft) :
+                        nbtTagCompoundClass.newInstance();
+                if (tag == null) return null;
+                return (String) tag.getClass().getMethod("l", String.class).invoke(tag, key);
             }
         } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException e) {
             e.printStackTrace();

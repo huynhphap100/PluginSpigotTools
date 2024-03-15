@@ -2,7 +2,10 @@ package me.orineko.pluginspigottools;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
+import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -18,15 +21,17 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
-public abstract class CommandManager extends Command {
+public abstract class CommandManager extends BukkitCommand implements CommandExecutor, TabCompleter {
 
     private final CommandInfo commandInfo;
     private final List<DataCommand> dataCommandList = new ArrayList<>();
     private final List<CommandTabComplete> tabList = new ArrayList<>();
+    private final HashMap<CommandTabComplete, List<String>> tabMap = new HashMap<>();
     private CommandMap commandMap;
+    private final Set<String> labelTempList = new HashSet<>();
 
-    public CommandManager(@Nonnull String name) {
-        super(name);
+    public CommandManager(@Nonnull Plugin plugin) {
+        super(plugin.getName(), "", "/"+plugin.getName(), Collections.emptyList());
         commandInfo = getClass().getAnnotation(CommandInfo.class);
         this.setAliases(Arrays.asList(commandInfo.aliases()));
     }
@@ -36,6 +41,7 @@ public abstract class CommandManager extends Command {
             CommandSub annotation = method.getAnnotation(CommandSub.class);
             if (annotation == null) continue;
             int length = annotation.length();
+            String[] commands = annotation.command();
             String[] names = annotation.names();
             String[] permissions = annotation.permissions();
             String[] permissionsMain = commandInfo.permissions();
@@ -43,20 +49,38 @@ public abstract class CommandManager extends Command {
                     Stream.of(annotation.permissions())).collect(Collectors.toList());
             boolean justPlayerUseCommand = annotation.justPlayerUseCmd();
             DataCommand dataCommand = new DataCommand(length, method);
+            dataCommand.addCommands(commands);
             dataCommand.addNames(names);
             dataCommand.addPermissions(permissions);
             dataCommand.setJustPlayerUseCmd(justPlayerUseCommand);
-            for (int i = 0; i < names.length; i++){
+            if(commands.length > 0)
+                labelTempList.addAll(Arrays.asList(commands));
+            for (int i = 0; i < names.length; i++) {
                 CommandTabComplete ctc = new CommandTabComplete(i, names[i]);
-                if(i > 0){
+                ctc.addLabels(commands);
+                if (i > 0) {
                     String[] arr = Arrays.copyOfRange(names, 0, i);
                     ctc.setCmdBefore(arr);
                 }
                 ctc.setPermission(permissions);
                 tabList.add(ctc);
+                tabMap.put(ctc, dataCommand.getCommandList());
             }
             dataCommandList.add(dataCommand);
         }
+        List<String> labelList = Arrays.stream(commandInfo.aliases()).collect(Collectors.toList());
+        labelList.removeAll(labelTempList);
+        dataCommandList.stream().filter(d -> d.getCommandList().isEmpty()).forEach(d -> d.addCommands(labelList));
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        return execute(sender, label, args);
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        return tabComplete(sender, label, args);
     }
 
     @Override
@@ -66,7 +90,17 @@ public abstract class CommandManager extends Command {
         String justPlayerCanUseMessage = getJustPlayerCanUseMessage();
         if (errorPermissionMessage == null) errorPermissionMessage = errorCommandMessage;
         if (justPlayerCanUseMessage == null) justPlayerCanUseMessage = errorCommandMessage;
-        DataCommand dataCommand = getDataCommand(args);
+        DataCommand dataCommand = getDataCommand(label, args);
+        if(sender instanceof Player) {
+            Player player = (Player) sender;
+            if (!player.isOp()) {
+                List<String> permList;
+                if(dataCommand == null) permList = Arrays.asList(commandInfo.permissions());
+                else permList = Stream.concat(Stream.of(commandInfo.permissions()),
+                        dataCommand.getPermissionList().stream()).collect(Collectors.toList());
+                if(permList.stream().noneMatch(player::hasPermission)) return true;
+            }
+        }
         if (checkObjectIsNull(dataCommand, sender, errorCommandMessage) || dataCommand == null) return true;
         if (checkObjectIsFalse(getPlayerHasPermission(dataCommand, sender, args), sender, errorPermissionMessage))
             return true;
@@ -78,7 +112,6 @@ public abstract class CommandManager extends Command {
         } else {
             dataCommand.callMethod(this, sender, args);
         }
-
         return true;
     }
 
@@ -86,18 +119,29 @@ public abstract class CommandManager extends Command {
     @Nonnull
     public List<String> tabComplete(@Nonnull CommandSender sender, @Nonnull String label, @Nonnull String[] args) throws IllegalArgumentException {
         List<String> list = executeTabCompleter(sender, label, args);
-        if(list == null){
-            list = tabList.stream().filter(t -> t.getIndice() == args.length-1)
+        if (list == null) {
+            String[] cmdArr = label.split(":");
+            String cmd = (cmdArr.length > 1) ? cmdArr[1] : label;
+            list = tabList.stream().filter(t -> t.getIndice() == args.length - 1)
                     /*.filter(t -> (t.getPermission() == null) || Arrays.stream(t.getPermission()).anyMatch(p -> {
                         Bukkit.broadcastMessage("tabC 1: "+!(sender instanceof Player));
                         Bukkit.broadcastMessage("tabC 2: "+sender.isOp());
                         Bukkit.broadcastMessage("tabC 3: "+sender.hasPermission(p));
                             return !(sender instanceof Player) || (sender.isOp() || sender.hasPermission(p));
-                        }))
-                    */.filter(t -> {
-                        if(t.getCmdBefore() == null) return true;
-                        for(int i = 0; i < t.getCmdBefore().length; i++)
-                            if(!args[i].equalsIgnoreCase(t.getCmdBefore()[i]))
+                        }))*/
+                    .filter(t ->{
+                        if(!(sender instanceof Player)) return true;
+                        Player player = (Player) sender;
+                        if(player.isOp()) return true;
+                        List<String> permList = Stream.concat(Stream.of(commandInfo.permissions()),
+                                Stream.of(t.getPermission())).collect(Collectors.toList());
+                        return permList.stream().anyMatch(player::hasPermission);
+                    }).filter(t -> tabMap.getOrDefault(t, new ArrayList<>()).stream()
+                            .anyMatch(c -> c.equalsIgnoreCase(cmd)))
+                    .filter(t -> {
+                        if (t.getCmdBefore() == null) return true;
+                        for (int i = 0; i < t.getCmdBefore().length; i++)
+                            if (!args[i].equalsIgnoreCase(t.getCmdBefore()[i]))
                                 return false;
                         return true;
                     }).map(CommandTabComplete::getCmd).collect(Collectors.toList());
@@ -120,10 +164,13 @@ public abstract class CommandManager extends Command {
     }
 
     @Nullable
-    private DataCommand getDataCommand(@Nonnull String[] args) {
+    private DataCommand getDataCommand(@Nonnull String label, @Nonnull String[] args) {
         List<DataCommand> dataCommandList = getDataCommandListInLength(args);
         if (dataCommandList.isEmpty()) return null;
+        String[] labelArr = label.split(":");
+        String cmd = (labelArr.length > 1) ? labelArr[1] : label;
         return dataCommandList.stream().filter(d -> {
+            if(d.getCommandList().stream().noneMatch(data -> data.equalsIgnoreCase(cmd))) return false;
             if (d.length == 0 && args.length == 0) return true;
             if (args.length <= 0) return false;
             for (int i = 0; i < d.getNameList().size(); i++) {
@@ -135,8 +182,12 @@ public abstract class CommandManager extends Command {
     }
 
     private boolean getPlayerHasPermission(@Nonnull DataCommand dataCommand, @Nonnull CommandSender sender, @Nonnull String[] args) {
-        if (sender instanceof Player && sender.isOp()) return true;
-        return dataCommand.getPermissionList().stream().anyMatch(sender::hasPermission);
+        if (sender instanceof Player) {
+            if (sender.isOp()) return true;
+            if (dataCommand.getPermissionList().isEmpty()) return true;
+            return dataCommand.getPermissionList().stream().anyMatch(sender::hasPermission);
+        }
+        return true;
     }
 
     public void sendMessageSender(@Nonnull CommandSender sender, @Nullable String text) {
@@ -163,9 +214,9 @@ public abstract class CommandManager extends Command {
     }
 
     @Nullable
-    protected Player findPlayerOnline(@Nonnull String player, @Nonnull CommandSender sender, @Nonnull String message){
+    protected Player findPlayerOnline(@Nonnull String player, @Nonnull CommandSender sender, @Nonnull String message) {
         Player p = Bukkit.getOnlinePlayers().stream().filter(pl -> pl.getName().equals(player)).findAny().orElse(null);
-        if(p != null) return p;
+        if (p != null) return p;
         sender.sendMessage(message);
         return null;
     }
@@ -215,6 +266,8 @@ public abstract class CommandManager extends Command {
     public @interface CommandSub {
         int length();
 
+        String[] command() default {};
+
         String[] names() default {};
 
         String[] permissions() default {};
@@ -225,6 +278,7 @@ public abstract class CommandManager extends Command {
 
     public static class DataCommand {
         private final int length;
+        private final List<String> commandList;
         private final List<String> nameList;
         private final List<String> permissionList;
         private final Method method;
@@ -233,12 +287,17 @@ public abstract class CommandManager extends Command {
         public DataCommand(int length, @Nonnull Method method) {
             this.length = length;
             this.method = method;
+            this.commandList = new ArrayList<>();
             this.nameList = new ArrayList<>();
             this.permissionList = new ArrayList<>();
         }
 
         public int getLength() {
             return length;
+        }
+
+        public List<String> getCommandList() {
+            return commandList;
         }
 
         public List<String> getNameList() {
@@ -259,6 +318,14 @@ public abstract class CommandManager extends Command {
 
         public Method getMethod() {
             return method;
+        }
+
+        public void addCommands(String... commands) {
+            commandList.addAll(Arrays.stream(commands).collect(Collectors.toList()));
+        }
+
+        public void addCommands(List<String> commands) {
+            commandList.addAll(commands);
         }
 
         public void addNames(String... names) {
@@ -288,17 +355,23 @@ public abstract class CommandManager extends Command {
 
     public static class CommandTabComplete {
         private final int indice;
+        private final List<String> labelList;
         private final String cmd;
         private String[] cmdBefore;
         private String[] permission;
 
-        public CommandTabComplete(int indice, String cmd){
+        public CommandTabComplete(int indice, @Nonnull String cmd) {
             this.indice = indice;
+            this.labelList = new ArrayList<>();
             this.cmd = cmd;
         }
 
         public int getIndice() {
             return indice;
+        }
+
+        public List<String> getLabelList() {
+            return labelList;
         }
 
         public String getCmd() {
@@ -309,16 +382,20 @@ public abstract class CommandManager extends Command {
             return cmdBefore;
         }
 
-        public String[] getPermission() {
-            return permission;
-        }
-
         public void setCmdBefore(String[] cmdBefore) {
             this.cmdBefore = cmdBefore;
         }
 
+        public String[] getPermission() {
+            return permission;
+        }
+
         public void setPermission(String[] permission) {
             this.permission = permission;
+        }
+
+        public void addLabels(String... labels) {
+            labelList.addAll(Arrays.stream(labels).collect(Collectors.toList()));
         }
     }
 
@@ -326,28 +403,46 @@ public abstract class CommandManager extends Command {
 
         public static final List<CommandManager> commandManagerList = new ArrayList<>();
 
-        public static void register(@Nonnull CommandManager... commandManagers) {
-            SimpleCommandMap scm = getSimpleCommandMap();
-            if (scm == null) return;
-            for (CommandManager cmd : commandManagers) {
-                scm.register(cmd.getName(), cmd);
-                cmd.register();
-                cmd.setCommandMap(scm);
-                commandManagerList.add(cmd);
+        public static void register(boolean useFilePlugin, JavaPlugin plugin, @Nonnull CommandManager... commandManagers) {
+            if(useFilePlugin) {
+                Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                    for (CommandManager cmd : commandManagers) {
+                        List<String> list = cmd.getAliases();
+                        list.add(cmd.getName());
+                        cmd.register();
+                        list.forEach(l -> {
+                            PluginCommand command = plugin.getCommand(l);
+                            if(command == null) return;
+                            command.setExecutor(cmd);
+                            command.setTabCompleter(cmd);
+                        });
+                    }
+                });
+            } else {
+                SimpleCommandMap scm = getSimpleCommandMap();
+                if (scm == null) return;
+                for (CommandManager cmd : commandManagers) {
+                    cmd.register();
+                    //cmd.register(scm);
+                    scm.register(cmd.getName(), cmd);
+                    //cmd.setCommandMap(scm);
+                    commandManagerList.add(cmd);
+                }
             }
         }
 
-        public static void unregister() {
+        public static void unregister(boolean useFilePlugin) {
+            if(useFilePlugin) return;
             SimpleCommandMap scm = getSimpleCommandMap();
             if (scm == null) return;
             Object map = getPrivateField(scm, "knownCommands");
-            if(map == null) return;
+            if (map == null) return;
             @SuppressWarnings("unchecked")
             HashMap<String, Command> knownCommands = (HashMap<String, Command>) map;
             for (CommandManager commandManager : commandManagerList) {
                 knownCommands.remove(commandManager.getName());
                 commandManager.getAliases().forEach(a -> {
-                    if(knownCommands.containsKey(a) && knownCommands.get(a).toString().contains(commandManager.getName()))
+                    if (knownCommands.containsKey(a) && knownCommands.get(a).toString().contains(commandManager.getName()))
                         knownCommands.remove(a);
                 });
             }
@@ -363,7 +458,11 @@ public abstract class CommandManager extends Command {
                 Object craftServer = craftServerClass.cast(Bukkit.getServer());
                 Object simpleCommandMap = craftServer.getClass().getMethod("getCommandMap").invoke(craftServer);
                 return ((SimpleCommandMap) simpleCommandMap);
-            } catch (ClassNotFoundException | InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
+            } catch (IllegalAccessException | ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            } catch (NoSuchMethodException e) {
                 e.printStackTrace();
             }
             return null;
@@ -384,5 +483,4 @@ public abstract class CommandManager extends Command {
             return null;
         }
     }
-
 }

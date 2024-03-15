@@ -1,31 +1,30 @@
-# main/Tools
+# Plugin Spigot Tools
+[![Bukkit Version](https://img.shields.io/badge/bukkit-1.19.1-dark_green.svg)](https://shields.io/)
+[![Java](https://img.shields.io/badge/java-8-dark_green.svg)](https://shields.io/)
 
+Library mainly designed to provide cross-version support for Minecraft Bukkit plugins,
+but it also includes numerous extra methods to help developers design their plugins easier and efficiently.
 
+### Project support
 
-## Getting Started
+- [XSeries](https://github.com/CryptoMorin/XSeries)
 
-Download links:
+### Link Facebook
 
-SSH clone URL: ssh://git@git.jetbrains.space/sitonaip/main/Tools.git
+- Please give feedback here [Phap Purple](https://www.facebook.com/PhapPurple)
 
-HTTPS clone URL: https://git.jetbrains.space/sitonaip/main/Tools.git
+### Getting Started
 
+1. Use command ```git clone https://github.com/huynhphap100/PluginSpigotTools.git``` at terminal.
+2. Open project PluginSpigotTools
+3. Use this command ```git clone https://github.com/CryptoMorin/XSeries.git``` at terminal (if you need use XSeries). See project XSeries here [XSeries](https://github.com/CryptoMorin/XSeries)
+4. Use command `mvn install` at terminal to install a repository.
 
-
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
-
-## Prerequisites
-
-What things you need to install the software and how to install them.
-
+#### Maven
+```xml
+<dependency>
+    <groupId>me.orineko</groupId>
+    <artifactId>Tools</artifactId>
+    <version>1.0</version>
+</dependency>
 ```
-Examples
-```
-
-## Deployment
-
-Add additional notes about how to deploy this on a production system.
-
-## Resources
-
-Add links to external resources for this project, such as CI server, bug tracker, etc.

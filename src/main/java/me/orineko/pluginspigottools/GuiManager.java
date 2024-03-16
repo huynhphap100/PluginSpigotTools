@@ -15,58 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * File Gui.yml Example:
- * <pre>
- * Title: "&bNameGui"
- * Format:
- *   - "aaaaaaaaa"
- *   - "abbbbbbba"
- *   - "abcccccba"
- *   - "abbbbbbba"
- *   - "aaaaaaaaa"
- * Items:
- *   a:
- *     Type: "WHITE_STAINED_GLASS_PANE"
- *   b:
- *     Key: "KEY_B"
- *     Type: "STONE"
- *     Name: "&7Stone name"
- *     Lore:
- *       - "&fYay yay."
- *   c:
- *     Key: "KEY_C"
- *     Type: "DIAMOND"
- *     Name: "&bSuper diamond of <~player>"
- *     Lore:
- *       - "&fYay yay."
- * </pre>
- * Class Extends {@link GuiManager} Example:
- * <pre>
- * public class NpcGui extends me.orineko.pluginspigottools.GuiManager {
- *
- *   public NpcGui() {
- *     super(StorageData.getGuiFile(), null);
- *   }
- *
- *   public enum Key{
- *     KEY_B, KEY_C;
- *
- *     public ItemManager getItemManager(@Nonnull me.orineko.pluginspigottools.GuiManager guiManager){
- *     return guiManager.getItemManager(name());
- *     }
- *   }
- *
- *   public ItemStack getInfo(@Nonnull Player player){
- *     ItemManager itemManager = Key.INFO.getItemManager(this);
- *     if(itemManager == null) return new ItemStack(Material.AIR);
- *     HashMap<~String, String> map = new HashMap<>();
- *     map.put("<~player>", player.getName());
- *     return me.orineko.pluginspigottools.MethodDefault.getItemReplaceValue(itemManager.getItemStack().clone(), map);
- *   }
- *
- * }
- * </pre>
- *
+ * Gui Manager
  * @author OriNeko
  * @version 1.0
  * @see ItemManager

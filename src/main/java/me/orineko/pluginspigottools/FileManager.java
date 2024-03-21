@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings({"UnusedReturnValue", "unused"})
-public class FileManager extends YamlConfiguration{
+public class FileManager extends YamlConfiguration {
 
     private final String fileName;
     protected File file;

@@ -3,6 +3,7 @@ package me.orineko.pluginspigottools;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public abstract class DataList<T> {
@@ -10,7 +11,7 @@ public abstract class DataList<T> {
     public final List<T> dataList;
 
     public DataList(){
-        dataList = new ArrayList<>();
+        dataList = Collections.synchronizedList(new ArrayList<>());
     }
 
     public T addData(@Nonnull T newData, T getData){

@@ -1,7 +1,7 @@
 package me.orineko.pluginspigottools;
 
+import lombok.Getter;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.Inventory;
@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
  * @version 1.0
  * @see ItemManager
  **/
+@Getter
 public abstract class GuiManager {
 
     protected final FileConfiguration file;
@@ -39,7 +41,7 @@ public abstract class GuiManager {
         String title = MethodDefault.formatColor(file.getString("Title", ""));
         int line = Math.min(file.getStringList("Format").size(), 6);
         this.inventory = Bukkit.createInventory(inventoryHolder, line * 9, title);
-        this.itemManagerList = new ArrayList<>();
+        this.itemManagerList = Collections.synchronizedList(new ArrayList<>());
     }
 
     /**
@@ -78,21 +80,11 @@ public abstract class GuiManager {
             ItemManager itemManager = getItemManager(formatString.charAt(i));
             if (itemManager == null) continue;
             itemManager.getSlotList().add(i);
-            this.inventory.setItem(i, itemManager.getItemStack());
+            ItemStack itemStack = itemManager.getItemStack();
+            itemStack = MethodDefault.getItemForGui(itemStack);
+            this.inventory.setItem(i, itemStack);
         }
         return true;
-    }
-
-    public FileConfiguration getFile() {
-        return file;
-    }
-
-    public Inventory getInventory() {
-        return inventory;
-    }
-
-    public List<ItemManager> getItemManagerList() {
-        return itemManagerList;
     }
 
     /**
@@ -152,9 +144,11 @@ public abstract class GuiManager {
         itemManager.getSlotList().forEach(i -> inventory.setItem(i, item));
     }
 
+    @Getter
     public static class ItemManager {
 
         private final char character;
+        @Nullable
         private final String key;
         private final List<Integer> slotList;
         private final ItemStack itemStack;
@@ -166,21 +160,5 @@ public abstract class GuiManager {
             this.itemStack = itemStack;
         }
 
-        public char getCharacter() {
-            return character;
-        }
-
-        @Nullable
-        public String getKey() {
-            return key;
-        }
-
-        public List<Integer> getSlotList() {
-            return slotList;
-        }
-
-        public ItemStack getItemStack() {
-            return itemStack;
-        }
     }
 }

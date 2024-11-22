@@ -3,7 +3,7 @@ package me.orineko.pluginspigottools;
 import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.messages.Titles;
-import net.objecthunter.exp4j.Expression;
+import de.tr7zw.nbtapi.NBTItem;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -14,8 +14,10 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.Plugin;
 
 import javax.annotation.Nonnull;
+import java.io.File;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -62,6 +64,35 @@ public class MethodDefault {
         return textList.stream().map(MethodDefault::formatColor).collect(Collectors.toList());
     }
 
+    public static List<FileManager> getAllFileInFolder(@Nonnull Plugin plugin, @Nonnull String... folder) {
+        List<FileManager> fileManagerList = new ArrayList<>();
+        File file = new File(plugin.getDataFolder(), String.join(File.separator, folder));
+        if(!file.exists()) return fileManagerList;
+        File[] files = file.listFiles();
+        if(files == null) return fileManagerList;
+        for(File f : files) {
+            if(f.isDirectory()) continue;
+            FileManager fileManager = new FileManager(f.getName(), plugin);
+            fileManager.createFolder(folder);
+            fileManager.createFile();
+            fileManagerList.add(fileManager);
+        }
+        return fileManagerList;
+    }
+
+    public static List<File> getAllFolderInFolder(@Nonnull Plugin plugin, @Nonnull String... folder) {
+        List<File> fileList = new ArrayList<>();
+        File file = new File(plugin.getDataFolder(), String.join(File.separator, folder));
+        if(!file.exists()) return fileList;
+        File[] files = file.listFiles();
+        if(files == null) return fileList;
+        for(File f : files) {
+            if(!f.isDirectory()) continue;
+            fileList.add(f);
+        }
+        return fileList;
+    }
+
     public static int randomInt(int min, int max){
         return new Random().nextInt((max-min)+1)+min;
     }
@@ -72,6 +103,18 @@ public class MethodDefault {
 
     public static double stringCalculate(@Nonnull String text){
         return new ExpressionBuilder(text).build().evaluate();
+    }
+
+    @SuppressWarnings("deprecation")
+    public static synchronized ItemStack getItemForGui(ItemStack itemStack) {
+        if(itemStack == null) return null;
+        if(itemStack.getType().equals(Material.AIR)) return itemStack;
+        if(itemStack.getAmount() <= 0) return itemStack;
+        if(itemStack.getItemMeta() == null) return itemStack;
+        ItemStack itemClone = itemStack.clone();
+        NBTItem nbtItem = new NBTItem(itemClone);
+        nbtItem.setString("ItemGui", "This is bug inventory!!!!!!");
+        return nbtItem.getItem();
     }
 
     public static boolean checkItemIsDefault(@Nonnull ItemStack itemStack){

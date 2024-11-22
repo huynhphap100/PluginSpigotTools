@@ -1,5 +1,8 @@
 package me.orineko.pluginspigottools;
 
+import lombok.Getter;
+import lombok.Setter;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -8,16 +11,20 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings({"UnusedReturnValue", "unused"})
+@Getter
+@Setter
 public class FileManager extends YamlConfiguration {
 
     private final String fileName;
     protected File file;
     private final Plugin plugin;
     private final List<File> folderList;
+    private final Object lock = new Object();
 
     public FileManager(@Nonnull String fileName, @Nonnull Plugin plugin) {
         super();
@@ -34,9 +41,7 @@ public class FileManager extends YamlConfiguration {
             path.append("/").append(folderString);
             File folder = new File(path.toString());
             folderList.add(folder);
-            if (folder.exists()) continue;
-            if (folder.length() == 1) folder.mkdir();
-            else folder.mkdirs();
+            if (!folder.exists()) folder.mkdirs();
         }
         return this;
     }
@@ -79,42 +84,54 @@ public class FileManager extends YamlConfiguration {
      * @return me.orineko.pluginspigottools.FileManager
      */
     public FileManager reload() {
-        if (file == null) this.file = new File(getPathFile());
-        if (!file.exists())
-            try {
-                copyDefault();
-            } catch (IllegalArgumentException e){
-                createFile();
-            }
+        synchronized (lock) {
+            if (file == null) this.file = new File(getPathFile());
+            if (!file.exists())
+                try {
+                    copyDefault();
+                } catch (IllegalArgumentException e) {
+                    createFile();
+                }
+        }
         reloadWithoutCreateFile();
         return this;
     }
 
     public FileManager reloadWithoutCreateFile() {
-        if(file == null || !file.exists()) return this;
-        try {
-            load(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8));
-        } catch (IOException | InvalidConfigurationException e) {
-            e.printStackTrace();
+        synchronized (lock) {
+            if (file == null || !file.exists()) return this;
+            try {
+                load(new InputStreamReader(Files.newInputStream(file.toPath()), StandardCharsets.UTF_8));
+            } catch (IOException | InvalidConfigurationException e) {
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    throw new RuntimeException(e);
+                });
+            }
+            InputStream resource = plugin.getResource(file.getName());
+            if (resource == null) return this;
+            InputStreamReader defConfigStream = new InputStreamReader(resource, StandardCharsets.UTF_8);
+            setDefaults(YamlConfiguration.loadConfiguration(defConfigStream));
         }
-        InputStream resource = plugin.getResource(file.getName());
-        if(resource == null) return this;
-        InputStreamReader defConfigStream = new InputStreamReader(resource, StandardCharsets.UTF_8);
-        setDefaults(YamlConfiguration.loadConfiguration(defConfigStream));
         return this;
     }
 
     public FileManager save() {
-        try {
-            save(file);
-        } catch (IOException e) {
-            e.printStackTrace();
+        synchronized (lock) {
+            try {
+                save(file);
+            } catch (IOException e) {
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    throw new RuntimeException(e);
+                });
+            }
         }
         return this;
     }
 
-    public FileManager setAndSave(String path, Object obj){
-        this.set(path, obj);
+    public FileManager setAndSave(String path, Object obj) {
+        synchronized (lock) {
+            this.set(path, obj);
+        }
         save();
         return this;
     }
@@ -131,14 +148,6 @@ public class FileManager extends YamlConfiguration {
         for (File folder : folderList) path.append(folder.getName()).append("/");
         path.append(fileName);
         return path.toString();
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public Plugin getPlugin() {
-        return plugin;
     }
 
     @Nullable

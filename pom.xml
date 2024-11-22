@@ -6,7 +6,7 @@
 
     <groupId>me.orineko</groupId>
     <artifactId>Tools</artifactId>
-    <version>1.3.2-test3</version>
+    <version>1.3.3-test1</version>
 
     <properties>
         <java.version>1.8</java.version>
@@ -14,6 +14,7 @@
     </properties>
 
     <build>
+        <finalName>Tools</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -54,6 +55,38 @@
                         </goals>
                         <configuration>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <id>repack</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <!-- Giải nén JAR vào thư mục tmp -->
+                                <unzip src="${project.basedir}/libs/item-nbt-api-plugin-2.13.1.jar" dest="${project.build.directory}/temp"/>
+
+                                <!-- Giải nén project chính vào tmp -->
+                                <unzip src="${project.build.directory}/Tools.jar" dest="${project.build.directory}/temp"/>
+
+                                <!-- Đóng gói lại tất cả các file .class vào JAR mới -->
+                                <jar destfile="${project.build.directory}/Tools.jar">
+                                    <fileset dir="${project.build.directory}/temp"/>
+                                </jar>
+
+                                <!-- Xóa thư mục tạm -->
+                                <delete dir="${project.build.directory}/temp"/>
+                            </target>
                         </configuration>
                     </execution>
                 </executions>
@@ -120,6 +153,13 @@
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
             <version>3.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>libs</groupId>
+            <artifactId>item-nbt-api-plugin-2.13.1</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/libs/item-nbt-api-plugin-2.13.1.jar</systemPath>
         </dependency>
     </dependencies>
 

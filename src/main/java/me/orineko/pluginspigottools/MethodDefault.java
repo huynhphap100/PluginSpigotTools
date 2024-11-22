@@ -4,6 +4,8 @@ import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.messages.Titles;
 import de.tr7zw.nbtapi.NBTItem;
+import me.orineko.pluginspigottools.api.nbt.NBTApiSetup;
+import me.orineko.pluginspigottools.api.nbt.NBTApiTool;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -105,16 +107,10 @@ public class MethodDefault {
         return new ExpressionBuilder(text).build().evaluate();
     }
 
-    @SuppressWarnings("deprecation")
-    public static synchronized ItemStack getItemForGui(ItemStack itemStack) {
-        if(itemStack == null) return null;
-        if(itemStack.getType().equals(Material.AIR)) return itemStack;
-        if(itemStack.getAmount() <= 0) return itemStack;
-        if(itemStack.getItemMeta() == null) return itemStack;
-        ItemStack itemClone = itemStack.clone();
-        NBTItem nbtItem = new NBTItem(itemClone);
-        nbtItem.setString("ItemGui", "This is bug inventory!!!!!!");
-        return nbtItem.getItem();
+    public static ItemStack getItemForGui(ItemStack itemStack) {
+        NBTApiTool nbtApiTool = NBTApiSetup.getNbtApiTool();
+        if(nbtApiTool != null) return nbtApiTool.setNbtItemForGui(itemStack);
+        return itemStack;
     }
 
     public static boolean checkItemIsDefault(@Nonnull ItemStack itemStack){

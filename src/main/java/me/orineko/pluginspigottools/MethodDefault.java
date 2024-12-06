@@ -3,7 +3,6 @@ package me.orineko.pluginspigottools;
 import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.messages.Titles;
-import de.tr7zw.nbtapi.NBTItem;
 import me.orineko.pluginspigottools.api.nbt.NBTApiSetup;
 import me.orineko.pluginspigottools.api.nbt.NBTApiTool;
 import net.objecthunter.exp4j.ExpressionBuilder;
@@ -141,11 +140,24 @@ public class MethodDefault {
     public static ItemStack getItemStackByFileAndItem(@Nonnull FileConfiguration file, @Nonnull String path, @Nonnull ItemStack itemStack){
         String nameItem = file.getString(path+".Name", "");
         List<String> loreItem = file.getStringList(path+".Lore");
+        int customModelData = file.getInt(path+".CustomModelData", 0);
         ItemMeta meta = itemStack.getItemMeta();
         if(meta == null) return itemStack;
         meta.setDisplayName(formatColor(nameItem));
         meta.setLore(loreItem.stream().map(MethodDefault::formatColor).collect(Collectors.toList()));
+        if(customModelData != 0) meta.setCustomModelData(customModelData);
         itemStack.setItemMeta(meta);
+        int amount = file.getInt(path+".Amount", 1);
+        itemStack.setAmount(amount);
+        file.getStringList(path+".Enchants").forEach(v -> {
+            String[] arr = v.split(" ");
+            String enchantmentName = arr[0];
+            int level = 1;
+            if (arr.length > 1) level = (int) MethodDefault.formatNumber(arr[1], 1);
+            Optional<XEnchantment> xEnchantmentOptional = XEnchantment.matchXEnchantment(enchantmentName);
+            if(xEnchantmentOptional.isPresent() && xEnchantmentOptional.get().getEnchant() != null)
+                itemStack.addUnsafeEnchantment(xEnchantmentOptional.get().getEnchant(), level);
+        });
         return itemStack;
     }
 

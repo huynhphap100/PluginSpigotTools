@@ -13,6 +13,7 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
@@ -146,6 +147,12 @@ public class MethodDefault {
         meta.setDisplayName(formatColor(nameItem));
         meta.setLore(loreItem.stream().map(MethodDefault::formatColor).collect(Collectors.toList()));
         if(customModelData != 0) meta.setCustomModelData(customModelData);
+        file.getStringList(path+".Flags").forEach(v2 -> {
+            try {
+                ItemFlag itemFlag = ItemFlag.valueOf(v2.toUpperCase());
+                meta.addItemFlags(itemFlag);
+            } catch (IllegalArgumentException ignore) {}
+        });
         itemStack.setItemMeta(meta);
         int amount = file.getInt(path+".Amount", 1);
         itemStack.setAmount(amount);

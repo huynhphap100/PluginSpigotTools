@@ -108,8 +108,8 @@ public class MethodDefault {
     }
 
     public static ItemStack getItemForGui(ItemStack itemStack) {
-        NBTApiTool nbtApiTool = NBTApiSetup.getNbtApiTool();
-        if(nbtApiTool != null) return nbtApiTool.setNbtItemForGui(itemStack);
+//        NBTApiTool nbtApiTool = NBTApiSetup.getNbtApiTool();
+//        if(nbtApiTool != null) return nbtApiTool.setNbtItemForGui(itemStack);
         return itemStack;
     }
 

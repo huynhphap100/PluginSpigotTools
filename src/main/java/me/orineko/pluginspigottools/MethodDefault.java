@@ -108,8 +108,17 @@ public class MethodDefault {
     }
 
     public static ItemStack getItemForGui(ItemStack itemStack) {
-//        NBTApiTool nbtApiTool = NBTApiSetup.getNbtApiTool();
-//        if(nbtApiTool != null) return nbtApiTool.setNbtItemForGui(itemStack);
+        NBTApiTool nbtApiTool = NBTApiSetup.getNbtApiTool();
+        if(nbtApiTool != null) return nbtApiTool.setNbtItemForGui(itemStack);
+        return itemStack;
+    }
+
+    public static ItemStack getItemForGuiNoNbtTag(ItemStack itemStack) {
+        NBTApiTool nbtApiTool = NBTApiSetup.getNbtApiTool();
+        if(nbtApiTool != null){
+            ItemStack itemStack1 = nbtApiTool.removeAllNbtItem(itemStack);
+            return nbtApiTool.setNbtItemForGui(itemStack1);
+        }
         return itemStack;
     }
 

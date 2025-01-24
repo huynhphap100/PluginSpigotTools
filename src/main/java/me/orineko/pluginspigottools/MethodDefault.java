@@ -235,11 +235,11 @@ public class MethodDefault {
         return getDropItem(itemHold, block);
     }
 
-    public void zip(@NonNull Plugin plugin, @NonNull String folderZip, @NonNull String folderDestination) {
+    public static void zip(@NonNull Plugin plugin, @NonNull String folderZip, @NonNull String folderDestination) {
         zip(plugin, folderZip, folderDestination, null);
     }
 
-    public void zip(@NonNull Plugin plugin, @NonNull String folderZip, @NonNull String folderDestination, String fileName) {
+    public static void zip(@NonNull Plugin plugin, @NonNull String folderZip, @NonNull String folderDestination, String fileName) {
         String pathMain = plugin.getDataFolder().toString();
         folderZip = pathMain + "/" + folderZip.replace("\\", "/");
         folderDestination = pathMain + "/" + folderDestination.replace("\\", "/");

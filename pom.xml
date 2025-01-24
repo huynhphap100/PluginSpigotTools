@@ -6,7 +6,7 @@
 
     <groupId>me.orineko</groupId>
     <artifactId>Tools</artifactId>
-    <version>1.3.3-5</version>
+    <version>1.3.4</version>
 
     <properties>
         <java.version>1.8</java.version>

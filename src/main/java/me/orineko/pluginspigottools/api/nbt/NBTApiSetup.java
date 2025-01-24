@@ -1,6 +1,5 @@
 package me.orineko.pluginspigottools.api.nbt;
 
-import lombok.Getter;
 import org.bukkit.Bukkit;
 
 import javax.annotation.Nullable;

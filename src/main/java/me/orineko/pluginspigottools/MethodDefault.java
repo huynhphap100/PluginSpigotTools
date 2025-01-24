@@ -3,6 +3,7 @@ package me.orineko.pluginspigottools;
 import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.messages.Titles;
+import lombok.NonNull;
 import me.orineko.pluginspigottools.api.nbt.NBTApiSetup;
 import me.orineko.pluginspigottools.api.nbt.NBTApiTool;
 import net.objecthunter.exp4j.ExpressionBuilder;
@@ -20,10 +21,21 @@ import org.bukkit.plugin.Plugin;
 
 import javax.annotation.Nonnull;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class MethodDefault {
 
@@ -221,6 +233,60 @@ public class MethodDefault {
     public static Collection<ItemStack> getDropItem(@Nonnull Player player, @Nonnull Block block) {
         ItemStack itemHold = player.getItemInHand();
         return getDropItem(itemHold, block);
+    }
+
+    public void zip(@NonNull Plugin plugin, @NonNull String folderZip, @NonNull String folderDestination) {
+        zip(plugin, folderZip, folderDestination, null);
+    }
+
+    public void zip(@NonNull Plugin plugin, @NonNull String folderZip, @NonNull String folderDestination, String fileName) {
+        String pathMain = plugin.getDataFolder().toString();
+        folderZip = pathMain + "/" + folderZip.replace("\\", "/");
+        folderDestination = pathMain + "/" + folderDestination.replace("\\", "/");
+
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss");
+        String formattedDateTime = now.format(formatter);
+        String zipName = ((fileName != null) ? fileName : "")+formattedDateTime + ".zip";
+
+        try (FileOutputStream fos = new FileOutputStream(zipName);
+             ZipOutputStream zos = new ZipOutputStream(fos)) {
+
+            Path sourcePath = Paths.get(folderZip);
+
+            try (Stream<Path> paths = Files.walk(sourcePath)) {
+                paths.forEach(path -> {
+                    try {
+                        String zipEntryName = sourcePath.relativize(path).toString();
+                        if (Files.isDirectory(path)) {
+                            zipEntryName += "/";
+                        }
+                        ZipEntry zipEntry = new ZipEntry(zipEntryName);
+                        zos.putNextEntry(zipEntry);
+
+                        if (Files.isRegularFile(path)) {
+                            Files.copy(path, zos);
+                        }
+
+                        zos.closeEntry();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+
+            Path destinationDir = Paths.get(folderDestination);
+            if (!Files.exists(destinationDir)) {
+                Files.createDirectories(destinationDir);
+            }
+
+            Path sourceZipPath = Paths.get(zipName);
+            Path destinationPath = Paths.get(folderDestination, sourceZipPath.getFileName().toString());
+            Files.move(sourceZipPath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static Collection<ItemStack> getDropItem(@Nonnull ItemStack itemHand, @Nonnull Block block) {

@@ -10,7 +10,7 @@ import java.util.Set;
 @SuppressWarnings("deprecation")
 public class NBTApiTool {
 
-    public synchronized ItemStack removeAllNbtItem(ItemStack itemStack) {
+    public ItemStack removeAllNbtItem(ItemStack itemStack) {
         if(itemStack == null) return null;
         if(itemStack.getType().equals(Material.AIR)) return itemStack;
         ItemStack itemClone = itemStack.clone();
@@ -20,7 +20,7 @@ public class NBTApiTool {
         return nbtItem.getItem();
     }
 
-    public synchronized ItemStack setNbtItemForGui(ItemStack itemStack) {
+    public ItemStack setNbtItemForGui(ItemStack itemStack) {
         if(itemStack == null) return null;
         if(itemStack.getType().equals(Material.AIR)) return itemStack;
         if(itemStack.getAmount() <= 0) return itemStack;

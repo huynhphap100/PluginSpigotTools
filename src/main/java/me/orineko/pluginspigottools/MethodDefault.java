@@ -162,7 +162,7 @@ public class MethodDefault {
 
     public static ItemStack getItemStackByFile(@Nonnull FileConfiguration file, @Nonnull String path) {
         String typeItem = file.getString(path + ".Type", "");
-        ItemStack itemStack = getItemAllVersion(typeItem.toUpperCase());
+        ItemStack itemStack = getItemAllVersion(typeItem);
         return getItemStackByFileAndItem(file, path, itemStack);
     }
 

@@ -4,6 +4,8 @@ import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.messages.Titles;
 import lombok.NonNull;
+import me.orineko.pluginspigottools.api.itemsadder.ItemsAdderManager;
+import me.orineko.pluginspigottools.api.itemsadder.ItemsAdderSetup;
 import me.orineko.pluginspigottools.api.nbt.NBTApiSetup;
 import me.orineko.pluginspigottools.api.nbt.NBTApiTool;
 import net.objecthunter.exp4j.ExpressionBuilder;
@@ -52,11 +54,11 @@ public class MethodDefault {
     /**
      * Convert a string to a double type.
      *
-     * @param text the text to convert.
+     * @param text         the text to convert.
      * @param valueDefault the value if it can't be converted.
      * @return the number if it can be converted, otherwise it's valueDefault.
      */
-    public static double formatNumber(@Nonnull String text, double valueDefault){
+    public static double formatNumber(@Nonnull String text, double valueDefault) {
         return checkFormatNumber(text) ? Double.parseDouble(text) : valueDefault;
     }
 
@@ -74,18 +76,18 @@ public class MethodDefault {
         return ChatColor.translateAlternateColorCodes('&', text);
     }
 
-    public static List<String> formatColor(@Nonnull List<String> textList){
+    public static List<String> formatColor(@Nonnull List<String> textList) {
         return textList.stream().map(MethodDefault::formatColor).collect(Collectors.toList());
     }
 
     public static List<FileManager> getAllFileInFolder(@Nonnull Plugin plugin, @Nonnull String... folder) {
         List<FileManager> fileManagerList = new ArrayList<>();
         File file = new File(plugin.getDataFolder(), String.join(File.separator, folder));
-        if(!file.exists()) return fileManagerList;
+        if (!file.exists()) return fileManagerList;
         File[] files = file.listFiles();
-        if(files == null) return fileManagerList;
-        for(File f : files) {
-            if(f.isDirectory()) continue;
+        if (files == null) return fileManagerList;
+        for (File f : files) {
+            if (f.isDirectory()) continue;
             FileManager fileManager = new FileManager(f.getName(), plugin);
             fileManager.createFolder(folder);
             fileManager.createFile();
@@ -97,51 +99,56 @@ public class MethodDefault {
     public static List<File> getAllFolderInFolder(@Nonnull Plugin plugin, @Nonnull String... folder) {
         List<File> fileList = new ArrayList<>();
         File file = new File(plugin.getDataFolder(), String.join(File.separator, folder));
-        if(!file.exists()) return fileList;
+        if (!file.exists()) return fileList;
         File[] files = file.listFiles();
-        if(files == null) return fileList;
-        for(File f : files) {
-            if(!f.isDirectory()) continue;
+        if (files == null) return fileList;
+        for (File f : files) {
+            if (!f.isDirectory()) continue;
             fileList.add(f);
         }
         return fileList;
     }
 
-    public static int randomInt(int min, int max){
-        return new Random().nextInt((max-min)+1)+min;
+    public static int randomInt(int min, int max) {
+        return new Random().nextInt((max - min) + 1) + min;
     }
 
-    public static double randomDouble(double min, double max){
-        return min+(max-min)*(new Random().nextDouble());
+    public static double randomDouble(double min, double max) {
+        return min + (max - min) * (new Random().nextDouble());
     }
 
-    public static double stringCalculate(@Nonnull String text){
+    public static double stringCalculate(@Nonnull String text) {
         return new ExpressionBuilder(text).build().evaluate();
     }
 
     public static ItemStack getItemForGui(ItemStack itemStack) {
         NBTApiTool nbtApiTool = NBTApiSetup.getNbtApiTool();
-        if(nbtApiTool != null) return nbtApiTool.setNbtItemForGui(itemStack);
+        if (nbtApiTool != null) return nbtApiTool.setNbtItemForGui(itemStack);
         return itemStack;
     }
 
     public static ItemStack getItemForGuiNoNbtTag(ItemStack itemStack) {
         NBTApiTool nbtApiTool = NBTApiSetup.getNbtApiTool();
-        if(nbtApiTool != null){
+        if (nbtApiTool != null) {
             ItemStack itemStack1 = nbtApiTool.removeAllNbtItem(itemStack);
             return nbtApiTool.setNbtItemForGui(itemStack1);
         }
         return itemStack;
     }
 
-    public static boolean checkItemIsDefault(@Nonnull ItemStack itemStack){
+    public static boolean checkItemIsDefault(@Nonnull ItemStack itemStack) {
         ItemMeta meta = itemStack.getItemMeta();
-        if(meta == null) return true;
+        if (meta == null) return true;
         return !meta.hasDisplayName() && !meta.hasLore();
     }
 
     public static ItemStack getItemAllVersion(@Nonnull String material) {
-        if(material.isEmpty()) return new ItemStack(Material.AIR);
+        if (material.isEmpty()) return new ItemStack(Material.AIR);
+        if (ItemsAdderSetup.getItemsAdderManager() != null && material.startsWith("[ItemsAdder]")) {
+            ItemStack itemStack = ItemsAdderSetup.getItemsAdderManager()
+                    .getItem(material.replace("[ItemsAdder]", ""));
+            if (itemStack != null) return itemStack;
+        }
         material = material.toUpperCase();
         try {
             return new ItemStack(Material.valueOf(material));
@@ -153,45 +160,46 @@ public class MethodDefault {
         }
     }
 
-    public static ItemStack getItemStackByFile(@Nonnull FileConfiguration file, @Nonnull String path){
-        String typeItem = file.getString(path+".Type", "");
+    public static ItemStack getItemStackByFile(@Nonnull FileConfiguration file, @Nonnull String path) {
+        String typeItem = file.getString(path + ".Type", "");
         ItemStack itemStack = getItemAllVersion(typeItem.toUpperCase());
         return getItemStackByFileAndItem(file, path, itemStack);
     }
 
-    public static ItemStack getItemStackByFileAndItem(@Nonnull FileConfiguration file, @Nonnull String path, @Nonnull ItemStack itemStack){
-        String nameItem = file.getString(path+".Name", "");
-        List<String> loreItem = file.getStringList(path+".Lore");
-        int customModelData = file.getInt(path+".CustomModelData", 0);
+    public static ItemStack getItemStackByFileAndItem(@Nonnull FileConfiguration file, @Nonnull String path, @Nonnull ItemStack itemStack) {
+        String nameItem = file.getString(path + ".Name", "");
+        List<String> loreItem = file.getStringList(path + ".Lore");
+        int customModelData = file.getInt(path + ".CustomModelData", 0);
         ItemMeta meta = itemStack.getItemMeta();
-        if(meta == null) return itemStack;
+        if (meta == null) return itemStack;
         meta.setDisplayName(formatColor(nameItem));
         meta.setLore(loreItem.stream().map(MethodDefault::formatColor).collect(Collectors.toList()));
-        if(customModelData != 0) meta.setCustomModelData(customModelData);
-        file.getStringList(path+".Flags").forEach(v2 -> {
+        if (customModelData != 0) meta.setCustomModelData(customModelData);
+        file.getStringList(path + ".Flags").forEach(v2 -> {
             try {
                 ItemFlag itemFlag = ItemFlag.valueOf(v2.toUpperCase());
                 meta.addItemFlags(itemFlag);
-            } catch (IllegalArgumentException ignore) {}
+            } catch (IllegalArgumentException ignore) {
+            }
         });
         itemStack.setItemMeta(meta);
-        int amount = file.getInt(path+".Amount", 1);
+        int amount = file.getInt(path + ".Amount", 1);
         itemStack.setAmount(amount);
-        file.getStringList(path+".Enchants").forEach(v -> {
+        file.getStringList(path + ".Enchants").forEach(v -> {
             String[] arr = v.split(" ");
             String enchantmentName = arr[0];
             int level = 1;
             if (arr.length > 1) level = (int) MethodDefault.formatNumber(arr[1], 1);
             Optional<XEnchantment> xEnchantmentOptional = XEnchantment.matchXEnchantment(enchantmentName);
-            if(xEnchantmentOptional.isPresent() && xEnchantmentOptional.get().getEnchant() != null)
+            if (xEnchantmentOptional.isPresent() && xEnchantmentOptional.get().getEnchant() != null)
                 itemStack.addUnsafeEnchantment(xEnchantmentOptional.get().getEnchant(), level);
         });
         return itemStack;
     }
 
-    public static ItemStack getItemReplaceValue(@Nonnull ItemStack itemStack, @Nonnull HashMap<String, String> map){
+    public static ItemStack getItemReplaceValue(@Nonnull ItemStack itemStack, @Nonnull HashMap<String, String> map) {
         ItemMeta meta = itemStack.getItemMeta();
-        if(meta == null) return itemStack;
+        if (meta == null) return itemStack;
         String name = meta.getDisplayName();
         for (Map.Entry<String, String> entry : map.entrySet()) {
             String s = entry.getKey();
@@ -213,8 +221,8 @@ public class MethodDefault {
         return itemStack;
     }
 
-    public static void addItemInventory(@Nonnull Player player, @Nonnull ItemStack itemStack){
-        if(player.getInventory().firstEmpty() != -1){
+    public static void addItemInventory(@Nonnull Player player, @Nonnull ItemStack itemStack) {
+        if (player.getInventory().firstEmpty() != -1) {
             player.getInventory().addItem(itemStack);
         } else {
             player.getWorld().dropItemNaturally(player.getLocation(), itemStack);
@@ -247,7 +255,7 @@ public class MethodDefault {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss");
         String formattedDateTime = now.format(formatter);
-        String zipName = ((fileName != null) ? fileName : "")+formattedDateTime + ".zip";
+        String zipName = ((fileName != null) ? fileName : "") + formattedDateTime + ".zip";
 
         try (FileOutputStream fos = new FileOutputStream(zipName);
              ZipOutputStream zos = new ZipOutputStream(fos)) {

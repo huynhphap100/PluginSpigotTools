@@ -61,7 +61,11 @@ public class FileManager extends YamlConfiguration {
                 e.printStackTrace();
             }
         }
-        reload();
+        try {
+            reload();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
         return this;
     }
 
@@ -74,7 +78,11 @@ public class FileManager extends YamlConfiguration {
     public FileManager copyDefault() {
         if (file == null) this.file = new File(getPathFile());
         if (!file.exists()) plugin.saveResource(getPathResourceFile(), false);
-        reload();
+        try {
+            reload();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
         return this;
     }
 
@@ -83,15 +91,11 @@ public class FileManager extends YamlConfiguration {
      *
      * @return me.orineko.pluginspigottools.FileManager
      */
-    public FileManager reload() {
+    public FileManager reload() throws FileNotFoundException {
         synchronized (lock) {
             if (file == null) this.file = new File(getPathFile());
             if (!file.exists())
-                try {
-                    copyDefault();
-                } catch (IllegalArgumentException e) {
-                    createFile();
-                }
+                throw new FileNotFoundException("File not found: " + file.getName());
         }
         reloadWithoutCreateFile();
         return this;

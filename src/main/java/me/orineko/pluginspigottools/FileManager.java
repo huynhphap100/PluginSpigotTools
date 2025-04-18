@@ -53,20 +53,28 @@ public class FileManager extends YamlConfiguration {
      */
     @SuppressWarnings("all")
     public FileManager createFile() {
-        if (file == null) this.file = new File(getPathFile());
-        if (!file.exists()) {
+        if (this.file == null) {
+            this.file = new File(this.getPathFile());
+        }
+
+        if (!this.file.exists()) {
             try {
-                file.createNewFile();
+                File parent = this.file.getParentFile();
+                if (parent != null && !parent.exists()) {
+                    parent.mkdirs();
+                }
+                this.file.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+
         try {
-            reload();
+            this.reload();
+            return this;
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
-        return this;
     }
 
     /**

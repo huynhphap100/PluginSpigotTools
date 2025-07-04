@@ -4,7 +4,6 @@ import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.messages.Titles;
 import lombok.NonNull;
-import me.orineko.pluginspigottools.api.itemsadder.ItemsAdderManager;
 import me.orineko.pluginspigottools.api.itemsadder.ItemsAdderSetup;
 import me.orineko.pluginspigottools.api.nbt.NBTApiSetup;
 import me.orineko.pluginspigottools.api.nbt.NBTApiTool;
@@ -229,11 +228,15 @@ public class MethodDefault {
         }
     }
 
-    public static void sendTitleAllVersion(Player player, String title, String subTitle) {
+    public static void sendTitleAllVersion(@NonNull Player player, @NonNull String title, @NonNull String subTitle) {
+        sendTitleAllVersion(player, title, subTitle, 5, 10, 5);
+    }
+
+    public static void sendTitleAllVersion(@NonNull Player player, @NonNull String title, @NonNull String subTitle, int fadeIn, int stay, int fadeOut) {
         try {
-            player.sendTitle(title, subTitle, 5, 10, 5);
+            player.sendTitle(title, subTitle, fadeIn, stay, fadeOut);
         } catch (Exception ignore) {
-            Titles.sendTitle(player, 5, 10, 5, title, subTitle);
+            Titles.sendTitle(player, fadeIn, stay, fadeOut, title, subTitle);
         }
     }
 

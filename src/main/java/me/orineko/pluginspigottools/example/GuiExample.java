@@ -4,11 +4,10 @@ import me.orineko.pluginspigottools.GuiManager;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.HashMap;
 
 public class GuiExample extends GuiManager {
@@ -17,11 +16,11 @@ public class GuiExample extends GuiManager {
      * Create a constructor for GuiManager.
      * </pre>
      *
+     * @param plugin          the plugin instance.
      * @param file            the file for inventory management.
-     * @param inventoryHolder the player keep inventory, set to null if inventory is for everyone.
      */
-    public GuiExample(@Nonnull FileConfiguration file, @Nullable InventoryHolder inventoryHolder) {
-        super(file, inventoryHolder);
+    public GuiExample(@Nonnull Plugin plugin, @Nonnull FileConfiguration file) {
+        super(plugin, file, null, null);
     }
 
     public enum Key {

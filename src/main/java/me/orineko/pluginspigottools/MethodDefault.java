@@ -7,6 +7,8 @@ import lombok.NonNull;
 import me.orineko.pluginspigottools.api.itemsadder.ItemsAdderSetup;
 import me.orineko.pluginspigottools.api.nbt.NBTApiSetup;
 import me.orineko.pluginspigottools.api.nbt.NBTApiTool;
+import me.orineko.pluginspigottools.api.placeholder.PlaceholderManager;
+import me.orineko.pluginspigottools.api.placeholder.PlaceholderSetup;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -41,10 +43,10 @@ import java.util.zip.ZipOutputStream;
 public class MethodDefault {
 
     /**
-     * Check a string can be converted to a double type.
+     * Check if a string can be converted to a double type.
      *
      * @param text the text to check.
-     * @return True if it can be converted, false otherwise.
+     * @return true if it can be converted, false otherwise.
      */
     public static boolean checkFormatNumber(@Nonnull String text) {
         return text.trim().matches("^-?\\d+(\\.\\d+)?$");
@@ -55,12 +57,18 @@ public class MethodDefault {
      *
      * @param text         the text to convert.
      * @param valueDefault the value if it can't be converted.
-     * @return the number if it can be converted, otherwise it's valueDefault.
+     * @return the number if it can be converted, otherwise valueDefault.
      */
     public static double formatNumber(@Nonnull String text, double valueDefault) {
         return checkFormatNumber(text) ? Double.parseDouble(text) : valueDefault;
     }
 
+    /**
+     * Format a string with color codes, including hex and '&' codes.
+     *
+     * @param text the string to format.
+     * @return the formatted string with color codes applied.
+     */
     public static String formatColor(@Nonnull String text) {
         try {
             Pattern pattern = Pattern.compile("#[a-fA-F0-9]{6}");
@@ -75,10 +83,23 @@ public class MethodDefault {
         return ChatColor.translateAlternateColorCodes('&', text);
     }
 
+    /**
+     * Format a list of strings with color codes.
+     *
+     * @param textList the list of strings to format.
+     * @return a new list with color codes applied to each string.
+     */
     public static List<String> formatColor(@Nonnull List<String> textList) {
         return textList.stream().map(MethodDefault::formatColor).collect(Collectors.toList());
     }
 
+    /**
+     * Get all files in a folder as FileManager objects.
+     *
+     * @param plugin the plugin instance.
+     * @param folder the folder path segments.
+     * @return a list of FileManager objects for each file in the folder.
+     */
     public static List<FileManager> getAllFileInFolder(@Nonnull Plugin plugin, @Nonnull String... folder) {
         List<FileManager> fileManagerList = new ArrayList<>();
         File file = new File(plugin.getDataFolder(), String.join(File.separator, folder));
@@ -95,6 +116,13 @@ public class MethodDefault {
         return fileManagerList;
     }
 
+    /**
+     * Get all folders in a folder.
+     *
+     * @param plugin the plugin instance.
+     * @param folder the folder path segments.
+     * @return a list of File objects representing each subfolder.
+     */
     public static List<File> getAllFolderInFolder(@Nonnull Plugin plugin, @Nonnull String... folder) {
         List<File> fileList = new ArrayList<>();
         File file = new File(plugin.getDataFolder(), String.join(File.separator, folder));
@@ -108,39 +136,71 @@ public class MethodDefault {
         return fileList;
     }
 
+    /**
+     * Generate a random integer between min and max (inclusive).
+     *
+     * @param min the minimum value.
+     * @param max the maximum value.
+     * @return a random integer between min and max.
+     */
     public static int randomInt(int min, int max) {
         return new Random().nextInt((max - min) + 1) + min;
     }
 
+    /**
+     * Generate a random double between min and max.
+     *
+     * @param min the minimum value.
+     * @param max the maximum value.
+     * @return a random double between min and max.
+     */
     public static double randomDouble(double min, double max) {
         return min + (max - min) * (new Random().nextDouble());
     }
 
+    /**
+     * Calculate the result of a mathematical expression in string form.
+     *
+     * @param text the mathematical expression.
+     * @return the result as a double.
+     */
     public static double stringCalculate(@Nonnull String text) {
         return new ExpressionBuilder(text).build().evaluate();
     }
 
-    public static ItemStack getItemForGui(ItemStack itemStack) {
+    /**
+     * Get an ItemStack for GUI use, applying NBT tags if available.
+     *
+     * @param itemStack the original ItemStack.
+     * @return the ItemStack with GUI NBT tags applied if possible.
+     */
+    public static ItemStack getItemForGui(@NonNull ItemStack itemStack) {
         NBTApiTool nbtApiTool = NBTApiSetup.getNbtApiTool();
-        if (nbtApiTool != null) return nbtApiTool.setNbtItemForGui(itemStack);
+        if (nbtApiTool != null) return nbtApiTool.setNbtItemGui(itemStack);
         return itemStack;
     }
 
-    public static ItemStack getItemForGuiNoNbtTag(ItemStack itemStack) {
+    /**
+     * Get an ItemStack for GUI use with all NBT tags removed, then apply GUI NBT tag.
+     *
+     * @param itemStack the original ItemStack.
+     * @return the ItemStack with all NBT tags removed and GUI NBT tag applied.
+     */
+    public static ItemStack getItemGuiNoNbtTag(@NonNull ItemStack itemStack) {
         NBTApiTool nbtApiTool = NBTApiSetup.getNbtApiTool();
         if (nbtApiTool != null) {
             ItemStack itemStack1 = nbtApiTool.removeAllNbtItem(itemStack);
-            return nbtApiTool.setNbtItemForGui(itemStack1);
+            return nbtApiTool.setNbtItemGui(itemStack1);
         }
         return itemStack;
     }
 
-    public static boolean checkItemIsDefault(@Nonnull ItemStack itemStack) {
-        ItemMeta meta = itemStack.getItemMeta();
-        if (meta == null) return true;
-        return !meta.hasDisplayName() && !meta.hasLore();
-    }
-
+    /**
+     * Get an ItemStack for any Minecraft version, supporting ItemsAdder and XMaterial.
+     *
+     * @param material the material name or ItemsAdder identifier.
+     * @return the corresponding ItemStack, or AIR if not found.
+     */
     public static ItemStack getItemAllVersion(@Nonnull String material) {
         if (material.isEmpty()) return new ItemStack(Material.AIR);
         if (ItemsAdderSetup.getItemsAdderManager() != null && material.startsWith("[ItemsAdder]")) {
@@ -159,12 +219,27 @@ public class MethodDefault {
         }
     }
 
+    /**
+     * Get an ItemStack from a configuration file section.
+     *
+     * @param file the configuration file.
+     * @param path the path to the item section.
+     * @return the constructed ItemStack.
+     */
     public static ItemStack getItemStackByFile(@Nonnull FileConfiguration file, @Nonnull String path) {
         String typeItem = file.getString(path + ".Type", "");
         ItemStack itemStack = getItemAllVersion(typeItem);
         return getItemStackByFileAndItem(file, path, itemStack);
     }
 
+    /**
+     * Get an ItemStack from a configuration file section, using a provided base ItemStack.
+     *
+     * @param file the configuration file.
+     * @param path the path to the item section.
+     * @param itemStack the base ItemStack to modify.
+     * @return the constructed ItemStack.
+     */
     public static ItemStack getItemStackByFileAndItem(@Nonnull FileConfiguration file, @Nonnull String path, @Nonnull ItemStack itemStack) {
         String nameItem = file.getString(path + ".Name", "");
         List<String> loreItem = file.getStringList(path + ".Lore");
@@ -196,7 +271,34 @@ public class MethodDefault {
         return itemStack;
     }
 
-    public static ItemStack getItemReplaceValue(@Nonnull ItemStack itemStack, @Nonnull HashMap<String, String> map) {
+    /**
+     * Replace placeholders in an ItemStack's name and lore with player-specific values.
+     *
+     * @param itemStack the ItemStack to modify.
+     * @param player the player whose placeholders will be used.
+     */
+    public static void modifyItemPlaceholder(@Nonnull ItemStack itemStack, @Nonnull Player player) {
+        PlaceholderManager placeholderManager = PlaceholderSetup.getPlaceholderManager();
+        if (placeholderManager == null) return;
+        ItemMeta meta = itemStack.getItemMeta();
+        if (meta == null) return;
+        String name = meta.getDisplayName();
+        List<String> lore = (meta.getLore() != null) ? meta.getLore() : new ArrayList<>();
+        name = placeholderManager.setPlaceholders(player, name);
+        lore = placeholderManager.setPlaceholders(player, lore);
+        meta.setDisplayName(name);
+        meta.setLore(lore);
+        itemStack.setItemMeta(meta);
+    }
+
+    /**
+     * Replace values in an ItemStack's name and lore using a map of replacements.
+     *
+     * @param itemStack the ItemStack to modify.
+     * @param map the map of string replacements.
+     * @return the modified ItemStack.
+     */
+    public static ItemStack getItemReplaceValue(@Nonnull ItemStack itemStack, @Nonnull Map<String, String> map) {
         ItemMeta meta = itemStack.getItemMeta();
         if (meta == null) return itemStack;
         String name = meta.getDisplayName();
@@ -220,6 +322,12 @@ public class MethodDefault {
         return itemStack;
     }
 
+    /**
+     * Add an item to a player's inventory, or drop it at their location if inventory is full.
+     *
+     * @param player the player to receive the item.
+     * @param itemStack the item to add.
+     */
     public static void addItemInventory(@Nonnull Player player, @Nonnull ItemStack itemStack) {
         if (player.getInventory().firstEmpty() != -1) {
             player.getInventory().addItem(itemStack);
@@ -228,10 +336,27 @@ public class MethodDefault {
         }
     }
 
+    /**
+     * Send a title and subtitle to a player using default fade timings.
+     *
+     * @param player the player to send the title to.
+     * @param title the main title text.
+     * @param subTitle the subtitle text.
+     */
     public static void sendTitleAllVersion(@NonNull Player player, @NonNull String title, @NonNull String subTitle) {
         sendTitleAllVersion(player, title, subTitle, 5, 10, 5);
     }
 
+    /**
+     * Send a title and subtitle to a player with custom fade timings.
+     *
+     * @param player the player to send the title to.
+     * @param title the main title text.
+     * @param subTitle the subtitle text.
+     * @param fadeIn the fade-in time (ticks).
+     * @param stay the stay time (ticks).
+     * @param fadeOut the fade-out time (ticks).
+     */
     public static void sendTitleAllVersion(@NonNull Player player, @NonNull String title, @NonNull String subTitle, int fadeIn, int stay, int fadeOut) {
         try {
             player.sendTitle(title, subTitle, fadeIn, stay, fadeOut);
@@ -240,16 +365,38 @@ public class MethodDefault {
         }
     }
 
+    /**
+     * Get the items dropped by breaking a block with a player's held item (legacy support).
+     *
+     * @param player the player breaking the block.
+     * @param block the block being broken.
+     * @return a collection of ItemStacks dropped.
+     */
     @SuppressWarnings("deprecation")
     public static Collection<ItemStack> getDropItem(@Nonnull Player player, @Nonnull Block block) {
         ItemStack itemHold = player.getItemInHand();
         return getDropItem(itemHold, block);
     }
 
+    /**
+     * Zip a folder and move the zip file to a destination folder.
+     *
+     * @param plugin the plugin instance.
+     * @param folderZip the folder to zip (relative to plugin data folder).
+     * @param folderDestination the destination folder for the zip file (relative to plugin data folder).
+     */
     public static void zip(@NonNull Plugin plugin, @NonNull String folderZip, @NonNull String folderDestination) {
         zip(plugin, folderZip, folderDestination, null);
     }
 
+    /**
+     * Zip a folder and move the zip file to a destination folder, with a custom file name prefix.
+     *
+     * @param plugin the plugin instance.
+     * @param folderZip the folder to zip (relative to plugin data folder).
+     * @param folderDestination the destination folder for the zip file (relative to plugin data folder).
+     * @param fileName the custom file name prefix (can be null).
+     */
     public static void zip(@NonNull Plugin plugin, @NonNull String folderZip, @NonNull String folderDestination, String fileName) {
         String pathMain = plugin.getDataFolder().toString();
         folderZip = pathMain + "/" + folderZip.replace("\\", "/");
@@ -300,6 +447,13 @@ public class MethodDefault {
         }
     }
 
+    /**
+     * Get the items dropped by breaking a block with a specific item in hand, with support for fortune and silk touch.
+     *
+     * @param itemHand the item used to break the block.
+     * @param block the block being broken.
+     * @return a collection of ItemStacks dropped.
+     */
     public static Collection<ItemStack> getDropItem(@Nonnull ItemStack itemHand, @Nonnull Block block) {
         Collection<ItemStack> itemsDrop = block.getDrops(itemHand);
         String version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];

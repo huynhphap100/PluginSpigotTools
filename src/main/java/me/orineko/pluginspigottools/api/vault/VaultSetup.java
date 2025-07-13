@@ -1,21 +1,22 @@
 package me.orineko.pluginspigottools.api.vault;
 
-import lombok.Getter;
 import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
 
 import javax.annotation.Nullable;
 
 public class VaultSetup {
 
-    @Nullable
-    @Getter
     private static VaultManager vaultManager;
+    private static boolean setup;
 
     @Nullable
-    public static VaultManager setupVault(){
-        Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("Vault");
-        if(plugin != null) vaultManager = new VaultManager();
+    public static VaultManager getVaultManager() {
+        if(!setup && vaultManager != null) {
+            if(Bukkit.getServer().getPluginManager().isPluginEnabled("Vault")) {
+                vaultManager = new VaultManager();
+            }
+            setup = true;
+        }
         return vaultManager;
     }
 

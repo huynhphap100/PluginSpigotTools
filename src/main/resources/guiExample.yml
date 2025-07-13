@@ -1,4 +1,4 @@
-Title: "&bNameGui"
+Title: "&bExample GUI"
 Format:
   - "aaaaaaaaa"
   - "abbbbbbba"
@@ -8,15 +8,24 @@ Format:
 Items:
   a:
     Type: "WHITE_STAINED_GLASS_PANE"
+    Name: "&7Border"
+    Lore:
+      - "&fThis is a border."
   b:
     Key: "KEY_B"
     Type: "STONE"
-    Name: "&7Stone name"
+    Name: "&7Stone Button"
     Lore:
-      - "&fYay yay."
+      - "&fClick to get a stone."
+    Commands:
+      - "give %player% stone 1"
+      - "say %player% clicked the stone button!"
   c:
     Key: "KEY_C"
     Type: "DIAMOND"
-    Name: "&bSuper diamond of <~player>"
+    Name: "&bSpecial Diamond for <player>"
     Lore:
-      - "&fYay yay."
+      - "&fClick to get a diamond."
+    Commands:
+      - "give %player% diamond 1"
+      - "say %player% is now rich!"

@@ -6,7 +6,7 @@
 
     <groupId>me.orineko</groupId>
     <artifactId>Tools</artifactId>
-    <version>1.3.4-11</version>
+    <version>1.3.5</version>
 
     <properties>
         <java.version>1.8</java.version>
@@ -64,37 +64,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--<plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.6</version>
-                <executions>
-                    <execution>
-                        <id>repack</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                &lt;!&ndash; Giải nén JAR vào thư mục tmp &ndash;&gt;
-                                <unzip src="${project.basedir}/libs/item-nbt-api-plugin-2.13.1.jar" dest="${project.build.directory}/temp"/>
-
-                                &lt;!&ndash; Giải nén project chính vào tmp &ndash;&gt;
-                                <unzip src="${project.build.directory}/Tools.jar" dest="${project.build.directory}/temp"/>
-
-                                &lt;!&ndash; Đóng gói lại tất cả các file .class vào JAR mới &ndash;&gt;
-                                <jar destfile="${project.build.directory}/Tools.jar">
-                                    <fileset dir="${project.build.directory}/temp"/>
-                                </jar>
-
-                                &lt;!&ndash; Xóa thư mục tạm &ndash;&gt;
-                                <delete dir="${project.build.directory}/temp"/>
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>-->
         </plugins>
         <resources>
             <resource>
@@ -128,7 +97,7 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.16.5-R0.1-SNAPSHOT</version>
+            <version>1.21.4-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <!--<dependency>
@@ -140,7 +109,6 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.36</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.github.cryptomorin</groupId>
@@ -181,6 +149,13 @@
             <version>1.0</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/libs/ItemsAdder_4.0.3_10.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>libs</groupId>
+            <artifactId>PlaceholderAPI-2.11.6</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/libs/PlaceholderAPI-2.11.6.jar</systemPath>
         </dependency>
     </dependencies>
 

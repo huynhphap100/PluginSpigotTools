@@ -122,7 +122,7 @@ public abstract class GuiManager {
             if (!formatString.contains(String.valueOf(c))) return;
             String key = sectionItem.getString(c + ".Key");
             List<String> commandList = sectionItem.getStringList(c + ".Commands");
-            ItemStack itemStack = MethodDefault.getItemStackByFile(this.file, String.valueOf(c));
+            ItemStack itemStack = MethodDefault.getItemStackByFile(this.file, "Items." + c);
             ItemManager itemManager = new ItemManager(this.plugin, c, key, itemStack, commandList);
             this.itemManagerList.add(itemManager);
         });

@@ -11,7 +11,7 @@ public class NBTApiSetup {
 
     @Nullable
     public static NBTApiTool getNbtApiTool() {
-        if(!setup) {
+        if(!setup && nbtApiTool == null) {
             if(Bukkit.getServer().getPluginManager().isPluginEnabled("NBTAPI")) {
                 nbtApiTool = new NBTApiTool();
             }

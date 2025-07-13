@@ -11,7 +11,7 @@ public class PlaceholderSetup {
 
     @Nullable
     public static PlaceholderManager getPlaceholderManager() {
-        if(!setup && placeholderManager != null) {
+        if(!setup && placeholderManager == null) {
             if(Bukkit.getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
                 placeholderManager = new PlaceholderManager();
             }

@@ -11,7 +11,7 @@ public class VaultSetup {
 
     @Nullable
     public static VaultManager getVaultManager() {
-        if(!setup && vaultManager != null) {
+        if(!setup && vaultManager == null) {
             if(Bukkit.getServer().getPluginManager().isPluginEnabled("Vault")) {
                 vaultManager = new VaultManager();
             }

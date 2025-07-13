@@ -11,7 +11,7 @@ public class ItemsAdderSetup {
 
     @Nullable
     public static ItemsAdderManager getItemsAdderManager() {
-        if(!setup && itemsAdderManager != null) {
+        if(!setup && itemsAdderManager == null) {
             if(Bukkit.getServer().getPluginManager().isPluginEnabled("ItemsAdder"))
                 itemsAdderManager = new ItemsAdderManager();
             setup = true;

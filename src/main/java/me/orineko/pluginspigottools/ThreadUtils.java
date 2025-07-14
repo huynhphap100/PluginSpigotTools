@@ -3,6 +3,7 @@ package me.orineko.pluginspigottools;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import me.orineko.pluginspigottools.scheduler.SchedulerProvider;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
@@ -146,21 +147,21 @@ public class ThreadUtils {
     }
 
     public void sendException(@NonNull Exception e, String message) {
-        Bukkit.getScheduler().runTask(plugin, () -> {
+        SchedulerProvider.get(plugin).runTask(() -> {
             if (message == null) throw new RuntimeException(e);
             else throw new RuntimeException(message, e);
         });
     }
 
     public void sendExceptionThreadIdExited(@NonNull String id) {
-        Bukkit.getScheduler().runTask(plugin, () -> {
+        SchedulerProvider.get(plugin).runTask(() -> {
             Bukkit.getPluginManager().disablePlugin(plugin);
             throw new ThreadIdExited("Id " + id + " already exists in thread");
         });
     }
 
     public void sendExceptionThreadIdNotExist(@NonNull String id) {
-        Bukkit.getScheduler().runTask(plugin, () -> {
+        SchedulerProvider.get(plugin).runTask(() -> {
             Bukkit.getPluginManager().disablePlugin(plugin);
             throw new ThreadIdExited("Id " + id + " not exist in thread");
         });

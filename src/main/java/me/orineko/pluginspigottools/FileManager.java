@@ -2,7 +2,7 @@ package me.orineko.pluginspigottools;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.Bukkit;
+import me.orineko.pluginspigottools.scheduler.SchedulerProvider;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -115,7 +115,7 @@ public class FileManager extends YamlConfiguration {
             try {
                 load(new InputStreamReader(Files.newInputStream(file.toPath()), StandardCharsets.UTF_8));
             } catch (IOException | InvalidConfigurationException e) {
-                Bukkit.getScheduler().runTask(plugin, () -> {
+                SchedulerProvider.get(plugin).runTask(() -> {
                     throw new RuntimeException(e);
                 });
             }
@@ -132,7 +132,7 @@ public class FileManager extends YamlConfiguration {
             try {
                 save(file);
             } catch (IOException e) {
-                Bukkit.getScheduler().runTask(plugin, () -> {
+                SchedulerProvider.get(plugin).runTask(() -> {
                     throw new RuntimeException(e);
                 });
             }

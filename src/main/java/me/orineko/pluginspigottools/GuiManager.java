@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import me.orineko.pluginspigottools.api.placeholder.PlaceholderManager;
 import me.orineko.pluginspigottools.api.placeholder.PlaceholderSetup;
+import me.orineko.pluginspigottools.scheduler.SchedulerProvider;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -68,6 +69,7 @@ public abstract class GuiManager {
      * @param inventoryHolder the inventory holder (null if inventory is for everyone).
      * @param player          the player for placeholder replacement in the title (can be null).
      */
+    @SuppressWarnings("deprecation")
     public GuiManager(@Nonnull Plugin plugin, @Nonnull FileConfiguration file, @Nullable InventoryHolder inventoryHolder, @Nullable Player player) {
         this.plugin = plugin;
         this.file = file;
@@ -252,7 +254,7 @@ public abstract class GuiManager {
          * @param player the player to use for placeholder replacement (can be null).
          */
         public void runCommand(@Nullable Player player) {
-            Bukkit.getScheduler().runTask(plugin, () -> {
+            SchedulerProvider.get(plugin).runTask(() -> {
                 for (String cmd : commandList) {
                     String commandToRun = cmd;
                     if (player != null) {

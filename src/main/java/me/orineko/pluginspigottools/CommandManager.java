@@ -3,6 +3,7 @@ package me.orineko.pluginspigottools;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import me.orineko.pluginspigottools.scheduler.SchedulerProvider;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.command.defaults.BukkitCommand;
@@ -375,7 +376,7 @@ public abstract class CommandManager extends BukkitCommand implements CommandExe
 
         public static void register(boolean useFilePlugin, JavaPlugin plugin, @Nonnull CommandManager... commandManagers) {
             if(useFilePlugin) {
-                Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                SchedulerProvider.get(plugin).runTask(() -> {
                     for (CommandManager cmd : commandManagers) {
                         List<String> list = cmd.getAliases();
                         list.add(cmd.getName());

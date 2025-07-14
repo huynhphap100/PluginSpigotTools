@@ -85,7 +85,7 @@ public class FoliaScheduler implements Scheduler {
 
     @Override
     public void runTask(Runnable task) {
-        Object scheduler = getRegionScheduler();
+        Object scheduler = getGlobalRegionScheduler();
         try {
             Method m = scheduler.getClass().getMethod("execute", Plugin.class, Location.class, Runnable.class);
             m.invoke(scheduler, plugin, location, task);

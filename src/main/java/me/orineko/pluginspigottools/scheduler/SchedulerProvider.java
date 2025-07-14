@@ -14,7 +14,7 @@ public class SchedulerProvider {
 
     private static boolean isFolia() {
         try {
-            Class.forName("io.papermc.paper.threadedregions.scheduler.RegionScheduler");
+            Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
             return true;
         } catch (ClassNotFoundException e) {
             return false;

@@ -6,4 +6,8 @@ public interface Scheduler {
     void runTaskLater(Runnable task, long delay);
     void runTaskAsync(Runnable task);
     void runTask(Runnable task);
+    // Huỷ toàn bộ task của plugin
+    void cancelAllTasks();
+    // Huỷ một task bất kỳ theo handle
+    void cancelTask(Object taskHandle);
 } 

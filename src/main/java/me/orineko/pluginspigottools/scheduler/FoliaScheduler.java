@@ -6,10 +6,13 @@ import org.bukkit.Location;
 import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.Method;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class FoliaScheduler implements Scheduler {
     private final Plugin plugin;
     private final Location location;
+    private final Set<Object> tasks = ConcurrentHashMap.newKeySet();
 
     public FoliaScheduler(@NonNull Plugin plugin) {
         this.plugin = plugin;
@@ -41,7 +44,8 @@ public class FoliaScheduler implements Scheduler {
         Object scheduler = getRegionScheduler();
         try {
             Method m = scheduler.getClass().getMethod("runAtFixedRate", Plugin.class, Location.class, java.util.function.Consumer.class, long.class, long.class);
-            m.invoke(scheduler, plugin, location, (java.util.function.Consumer<Object>) scheduledTask -> task.run(), delay, period);
+            Object scheduledTask = m.invoke(scheduler, plugin, location, (java.util.function.Consumer<Object>) t -> task.run(), delay, period);
+            tasks.add(scheduledTask);
         } catch (Exception e) {
             throw new RuntimeException("Failed to invoke runAtFixedRate via reflection", e);
         }
@@ -54,7 +58,8 @@ public class FoliaScheduler implements Scheduler {
         Object scheduler = getGlobalRegionScheduler();
         try {
             Method m = scheduler.getClass().getMethod("runAtFixedRate", Plugin.class, java.util.function.Consumer.class, long.class, long.class);
-            m.invoke(scheduler, plugin, (java.util.function.Consumer<Object>) scheduledTask -> task.run(), delay, period);
+            Object scheduledTask = m.invoke(scheduler, plugin, (java.util.function.Consumer<Object>) t -> task.run(), delay, period);
+            tasks.add(scheduledTask);
         } catch (Exception e) {
             throw new RuntimeException("Failed to invoke runAtFixedRate (async) via reflection", e);
         }
@@ -66,7 +71,8 @@ public class FoliaScheduler implements Scheduler {
         Object scheduler = getRegionScheduler();
         try {
             Method m = scheduler.getClass().getMethod("runDelayed", Plugin.class, Location.class, java.util.function.Consumer.class, long.class);
-            m.invoke(scheduler, plugin, location, (java.util.function.Consumer<Object>) scheduledTask -> task.run(), delay);
+            Object scheduledTask = m.invoke(scheduler, plugin, location, (java.util.function.Consumer<Object>) t -> task.run(), delay);
+            tasks.add(scheduledTask);
         } catch (Exception e) {
             throw new RuntimeException("Failed to invoke runDelayed via reflection", e);
         }
@@ -77,7 +83,8 @@ public class FoliaScheduler implements Scheduler {
         Object scheduler = getGlobalRegionScheduler();
         try {
             Method m = scheduler.getClass().getMethod("execute", Plugin.class, Runnable.class);
-            m.invoke(scheduler, plugin, task);
+            Object scheduledTask = m.invoke(scheduler, plugin, task);
+            tasks.add(scheduledTask);
         } catch (Exception e) {
             throw new RuntimeException("Failed to invoke execute (async) via reflection", e);
         }
@@ -88,9 +95,35 @@ public class FoliaScheduler implements Scheduler {
         Object scheduler = getGlobalRegionScheduler();
         try {
             Method m = scheduler.getClass().getMethod("execute", Plugin.class, Location.class, Runnable.class);
-            m.invoke(scheduler, plugin, location, task);
+            Object scheduledTask = m.invoke(scheduler, plugin, location, task);
+            tasks.add(scheduledTask);
         } catch (Exception e) {
             throw new RuntimeException("Failed to invoke execute via reflection", e);
+        }
+    }
+
+    @Override
+    public void cancelAllTasks() {
+        // Reflection: GlobalRegionScheduler.cancelTasks(plugin)
+        Object scheduler = getGlobalRegionScheduler();
+        try {
+            Method m = scheduler.getClass().getMethod("cancelTasks", Plugin.class);
+            m.invoke(scheduler, plugin);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to invoke cancelTasks via reflection", e);
+        }
+        tasks.clear();
+    }
+
+    @Override
+    public void cancelTask(Object taskHandle) {
+        if (taskHandle == null) return;
+        try {
+            Method m = taskHandle.getClass().getMethod("cancel");
+            m.invoke(taskHandle);
+            tasks.remove(taskHandle);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to cancel task via reflection", e);
         }
     }
 } 

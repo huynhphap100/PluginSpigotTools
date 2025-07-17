@@ -1,9 +1,12 @@
 package me.orineko.pluginspigottools;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
+
 import javax.annotation.Nullable;
 import java.util.*;
 
+@Getter
 public abstract class DataSet<T> {
 
     public final Set<T> dataSet;
@@ -12,27 +15,23 @@ public abstract class DataSet<T> {
         dataSet = Collections.synchronizedSet(new HashSet<>());
     }
 
-    public T addData(@Nonnull T newData, T getData){
+    public T addData(@NonNull T newData, T getData){
         if(getData != null) return getData;
         dataSet.add(newData);
         return newData;
     }
 
     @Nullable
-    public T getData(@Nonnull GetData<T> getData){
+    public T getData(@NonNull GetData<T> getData){
         return dataSet.stream().filter(getData::getData).findAny().orElse(null);
     }
 
-    public void removeData(@Nonnull T data){
+    public void removeData(@NonNull T data){
         dataSet.remove(data);
     }
 
-    public Set<T> getDataSet() {
-        return dataSet;
-    }
-
     public interface GetData<T> {
-        boolean getData(@Nonnull T data);
+        boolean getData(@NonNull T data);
     }
 
     public interface AddData<T> {

@@ -1,11 +1,14 @@
 package me.orineko.pluginspigottools;
 
+import lombok.Getter;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@Getter
 public abstract class DataList<T> {
 
     public final List<T> dataList;
@@ -27,10 +30,6 @@ public abstract class DataList<T> {
 
     public void removeData(@Nonnull T data){
         dataList.remove(data);
-    }
-
-    public List<T> getDataList() {
-        return dataList;
     }
 
     public interface GetData<T> {

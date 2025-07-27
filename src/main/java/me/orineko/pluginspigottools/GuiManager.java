@@ -69,7 +69,6 @@ public abstract class GuiManager {
      * @param inventoryHolder the inventory holder (null if inventory is for everyone).
      * @param player          the player for placeholder replacement in the title (can be null).
      */
-    @SuppressWarnings("deprecation")
     public GuiManager(@Nonnull Plugin plugin, @Nonnull FileConfiguration file, @Nullable InventoryHolder inventoryHolder, @Nullable Player player) {
         this.plugin = plugin;
         this.file = file;
@@ -124,7 +123,7 @@ public abstract class GuiManager {
             if (!formatString.contains(String.valueOf(c))) return;
             String key = sectionItem.getString(c + ".Key");
             List<String> commandList = sectionItem.getStringList(c + ".Commands");
-            ItemStack itemStack = MethodDefault.getItemStackByFile(this.file, "Items." + c);
+            ItemStack itemStack = MethodDefault.getItemStackByFile(this.file, "Items." + c, plugin);
             ItemManager itemManager = new ItemManager(this.plugin, c, key, itemStack, commandList);
             this.itemManagerList.add(itemManager);
         });

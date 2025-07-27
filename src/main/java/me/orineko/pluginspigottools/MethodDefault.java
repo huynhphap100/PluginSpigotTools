@@ -4,6 +4,8 @@ import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.messages.Titles;
 import lombok.NonNull;
+import me.orineko.pluginspigottools.api.headdb.HeadDBManager;
+import me.orineko.pluginspigottools.api.headdb.HeadDBSetup;
 import me.orineko.pluginspigottools.api.itemsadder.ItemsAdderSetup;
 import me.orineko.pluginspigottools.api.nbt.NBTApiSetup;
 import me.orineko.pluginspigottools.api.nbt.NBTApiTool;
@@ -23,6 +25,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -202,12 +205,30 @@ public class MethodDefault {
      * @return the corresponding ItemStack, or AIR if not found.
      */
     public static ItemStack getItemAllVersion(@Nonnull String material) {
+        return getItemAllVersion(material, null);
+    }
+
+    /**
+     * Get an ItemStack for any Minecraft version, supporting ItemsAdder, HeadDB and XMaterial.
+     * @param material the material name or ItemsAdder, HeadDB identifier.
+     * @param plugin for setup HeadDB
+     * @return the corresponding ItemStack, or AIR if not found.
+     */
+    public static ItemStack getItemAllVersion(@Nonnull String material, @Nullable Plugin plugin) {
         if (material.isEmpty()) return new ItemStack(Material.AIR);
         if (ItemsAdderSetup.getItemsAdderManager() != null && material.startsWith("[ItemsAdder]")) {
             ItemStack itemStack = ItemsAdderSetup.getItemsAdderManager()
                     .getItem(material.replace("[ItemsAdder]", ""));
             if (itemStack != null) return itemStack;
         }
+        if(plugin != null && material.startsWith("[HeadDB]")) {
+            HeadDBManager headDBManager = HeadDBSetup.getHeadDBManager(plugin);
+            if(headDBManager != null) {
+                ItemStack itemStack = headDBManager.getItemHead(material.replace("[HeadDB]", ""));
+                if (itemStack != null) return itemStack;
+            }
+        }
+
         material = material.toUpperCase();
         try {
             return new ItemStack(Material.valueOf(material));
@@ -227,8 +248,20 @@ public class MethodDefault {
      * @return the constructed ItemStack.
      */
     public static ItemStack getItemStackByFile(@Nonnull FileConfiguration file, @Nonnull String path) {
+        return getItemStackByFile(file, path, null);
+    }
+
+    /**
+     * Get an ItemStack from a configuration file section.
+     *
+     * @param file the configuration file.
+     * @param path the path to the item section.
+     * @param plugin to setup HeadDB
+     * @return the constructed ItemStack.
+     */
+    public static ItemStack getItemStackByFile(@Nonnull FileConfiguration file, @Nonnull String path, @Nullable Plugin plugin) {
         String typeItem = file.getString(path + ".Type", "");
-        ItemStack itemStack = getItemAllVersion(typeItem);
+        ItemStack itemStack = getItemAllVersion(typeItem, plugin);
         return getItemStackByFileAndItem(file, path, itemStack);
     }
 

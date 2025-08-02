@@ -1,8 +1,9 @@
 package me.orineko.pluginspigottools;
 
+import com.cjcrafter.foliascheduler.FoliaCompatibility;
+import com.cjcrafter.foliascheduler.ServerImplementation;
 import lombok.Getter;
 import lombok.Setter;
-import me.orineko.pluginspigottools.scheduler.SchedulerProvider;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -115,7 +116,8 @@ public class FileManager extends YamlConfiguration {
             try {
                 load(new InputStreamReader(Files.newInputStream(file.toPath()), StandardCharsets.UTF_8));
             } catch (IOException | InvalidConfigurationException e) {
-                SchedulerProvider.get(plugin).runTask(() -> {
+                ServerImplementation serverImplementation = new FoliaCompatibility(plugin).getServerImplementation();
+                serverImplementation.global().run(() -> {
                     throw new RuntimeException(e);
                 });
             }
@@ -132,7 +134,8 @@ public class FileManager extends YamlConfiguration {
             try {
                 save(file);
             } catch (IOException e) {
-                SchedulerProvider.get(plugin).runTask(() -> {
+                ServerImplementation serverImplementation = new FoliaCompatibility(plugin).getServerImplementation();
+                serverImplementation.global().run(() -> {
                     throw new RuntimeException(e);
                 });
             }

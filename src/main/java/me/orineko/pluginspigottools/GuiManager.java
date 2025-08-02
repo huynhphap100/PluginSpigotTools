@@ -1,10 +1,11 @@
 package me.orineko.pluginspigottools;
 
+import com.cjcrafter.foliascheduler.FoliaCompatibility;
+import com.cjcrafter.foliascheduler.ServerImplementation;
 import lombok.Getter;
 import lombok.NonNull;
 import me.orineko.pluginspigottools.api.placeholder.PlaceholderManager;
 import me.orineko.pluginspigottools.api.placeholder.PlaceholderSetup;
-import me.orineko.pluginspigottools.scheduler.SchedulerProvider;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -253,7 +254,8 @@ public abstract class GuiManager {
          * @param player the player to use for placeholder replacement (can be null).
          */
         public void runCommand(@Nullable Player player) {
-            SchedulerProvider.get(plugin).runTask(() -> {
+            ServerImplementation serverImplementation = new FoliaCompatibility(plugin).getServerImplementation();
+            serverImplementation.global().run(() -> {
                 for (String cmd : commandList) {
                     String commandToRun = cmd;
                     if (player != null) {

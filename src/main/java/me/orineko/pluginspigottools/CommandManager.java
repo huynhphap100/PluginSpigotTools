@@ -1,9 +1,10 @@
 package me.orineko.pluginspigottools;
 
+import com.cjcrafter.foliascheduler.FoliaCompatibility;
+import com.cjcrafter.foliascheduler.ServerImplementation;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import me.orineko.pluginspigottools.scheduler.SchedulerProvider;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.command.defaults.BukkitCommand;
@@ -376,7 +377,8 @@ public abstract class CommandManager extends BukkitCommand implements CommandExe
 
         public static void register(boolean useFilePlugin, JavaPlugin plugin, @Nonnull CommandManager... commandManagers) {
             if(useFilePlugin) {
-                SchedulerProvider.get(plugin).runTask(() -> {
+                ServerImplementation scheduler = new FoliaCompatibility(plugin).getServerImplementation();
+                scheduler.global().run(() -> {
                     for (CommandManager cmd : commandManagers) {
                         List<String> list = cmd.getAliases();
                         list.add(cmd.getName());

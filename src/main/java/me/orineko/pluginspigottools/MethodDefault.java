@@ -11,12 +11,11 @@ import me.orineko.pluginspigottools.api.nbt.NBTApiSetup;
 import me.orineko.pluginspigottools.api.nbt.NBTApiTool;
 import me.orineko.pluginspigottools.api.placeholder.PlaceholderManager;
 import me.orineko.pluginspigottools.api.placeholder.PlaceholderSetup;
-import net.objecthunter.exp4j.ExpressionBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
@@ -162,16 +161,6 @@ public class MethodDefault {
     }
 
     /**
-     * Calculate the result of a mathematical expression in string form.
-     *
-     * @param text the mathematical expression.
-     * @return the result as a double.
-     */
-    public static double stringCalculate(@Nonnull String text) {
-        return new ExpressionBuilder(text).build().evaluate();
-    }
-
-    /**
      * Get an ItemStack for GUI use, applying NBT tags if available.
      *
      * @param itemStack the original ItemStack.
@@ -243,46 +232,46 @@ public class MethodDefault {
     /**
      * Get an ItemStack from a configuration file section.
      *
-     * @param file the configuration file.
+     * @param section the configuration file.
      * @param path the path to the item section.
      * @return the constructed ItemStack.
      */
-    public static ItemStack getItemStackByFile(@Nonnull FileConfiguration file, @Nonnull String path) {
-        return getItemStackByFile(file, path, null);
+    public static ItemStack getItemStackByFile(@Nonnull ConfigurationSection section, @Nonnull String path) {
+        return getItemStackByFile(section, path, null);
     }
 
     /**
      * Get an ItemStack from a configuration file section.
      *
-     * @param file the configuration file.
+     * @param section the section in configuration file.
      * @param path the path to the item section.
      * @param plugin to setup HeadDB
      * @return the constructed ItemStack.
      */
-    public static ItemStack getItemStackByFile(@Nonnull FileConfiguration file, @Nonnull String path, @Nullable Plugin plugin) {
-        String typeItem = file.getString(path + ".Type", "");
+    public static ItemStack getItemStackByFile(@Nonnull ConfigurationSection section, @Nonnull String path, @Nullable Plugin plugin) {
+        String typeItem = section.getString(path + ".Type", "");
         ItemStack itemStack = getItemAllVersion(typeItem, plugin);
-        return getItemStackByFileAndItem(file, path, itemStack);
+        return getItemStackByFileAndItem(section, path, itemStack);
     }
 
     /**
-     * Get an ItemStack from a configuration file section, using a provided base ItemStack.
+     * Get an ItemStack from a configuration section, using a provided base ItemStack.
      *
-     * @param file the configuration file.
+     * @param section the section in configuration file.
      * @param path the path to the item section.
      * @param itemStack the base ItemStack to modify.
      * @return the constructed ItemStack.
      */
-    public static ItemStack getItemStackByFileAndItem(@Nonnull FileConfiguration file, @Nonnull String path, @Nonnull ItemStack itemStack) {
-        String nameItem = file.getString(path + ".Name", "");
-        List<String> loreItem = file.getStringList(path + ".Lore");
-        int customModelData = file.getInt(path + ".CustomModelData", 0);
+    public static ItemStack getItemStackByFileAndItem(@Nonnull ConfigurationSection section, @Nonnull String path, @Nonnull ItemStack itemStack) {
+        String nameItem = section.getString(path + ".Name", "");
+        List<String> loreItem = section.getStringList(path + ".Lore");
+        int customModelData = section.getInt(path + ".CustomModelData", 0);
         ItemMeta meta = itemStack.getItemMeta();
         if (meta == null) return itemStack;
         meta.setDisplayName(formatColor(nameItem));
         meta.setLore(loreItem.stream().map(MethodDefault::formatColor).collect(Collectors.toList()));
         if (customModelData != 0) meta.setCustomModelData(customModelData);
-        file.getStringList(path + ".Flags").forEach(v2 -> {
+        section.getStringList(path + ".Flags").forEach(v2 -> {
             try {
                 ItemFlag itemFlag = ItemFlag.valueOf(v2.toUpperCase());
                 meta.addItemFlags(itemFlag);
@@ -290,9 +279,9 @@ public class MethodDefault {
             }
         });
         itemStack.setItemMeta(meta);
-        int amount = file.getInt(path + ".Amount", 1);
+        int amount = section.getInt(path + ".Amount", 1);
         itemStack.setAmount(amount);
-        file.getStringList(path + ".Enchants").forEach(v -> {
+        section.getStringList(path + ".Enchants").forEach(v -> {
             String[] arr = v.split(" ");
             String enchantmentName = arr[0];
             int level = 1;

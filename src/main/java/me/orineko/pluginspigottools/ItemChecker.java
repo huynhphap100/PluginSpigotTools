@@ -124,8 +124,18 @@ public class ItemChecker {
         return true;
     }
 
+    private static final int CACHED_VERSION = getCachedVersion();
+
+    private static int getCachedVersion() {
+        try {
+            return Integer.parseInt(Bukkit.getBukkitVersion().split("-")[0].split("\\.")[1]);
+        } catch (Exception e) {
+            return 20; // Default to latest version if parsing fails
+        }
+    }
+
     public int getVersionSpigot() {
-        return Integer.parseInt(Bukkit.getBukkitVersion().split("-")[0].split("\\.")[1]);
+        return CACHED_VERSION;
     }
 
     public static ItemCheckerBuilder builder(@NonNull ItemStack itemOrigin) {

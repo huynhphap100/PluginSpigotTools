@@ -17,7 +17,9 @@ public abstract class DataSet<T> {
 
     public T addData(@NonNull T newData, T getData){
         if(getData != null) return getData;
-        dataSet.add(newData);
+        synchronized(dataSet) {
+            dataSet.add(newData);
+        }
         return newData;
     }
 

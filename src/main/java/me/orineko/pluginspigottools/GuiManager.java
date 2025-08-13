@@ -108,11 +108,19 @@ public abstract class GuiManager {
         this.inventory.clear();
         this.itemManagerList.clear();
 
-        format = format.stream().map(StringBuilder::new).map(s -> {
-            if (s.length() > 9) return s.substring(0, 8);
-            if (s.length() < 9) for (int i = s.length(); i <= 9; i++) s.append("?");
-            return s;
-        }).map(Object::toString).collect(Collectors.toList());
+        // Optimize format processing - avoid unnecessary stream operations
+        for (int i = 0; i < format.size(); i++) {
+            String line = format.get(i);
+            if (line.length() > 9) {
+                format.set(i, line.substring(0, 9));
+            } else if (line.length() < 9) {
+                StringBuilder sb = new StringBuilder(line);
+                while (sb.length() < 9) {
+                    sb.append("?");
+                }
+                format.set(i, sb.toString());
+            }
+        }
 
         String formatString = String.join("", format);
 

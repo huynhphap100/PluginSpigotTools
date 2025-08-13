@@ -19,7 +19,9 @@ public abstract class DataList<T> {
 
     public T addData(@Nonnull T newData, T getData){
         if(getData != null) return getData;
-        dataList.add(newData);
+        synchronized(dataList) {
+            dataList.add(newData);
+        }
         return newData;
     }
 

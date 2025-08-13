@@ -42,12 +42,15 @@ public class ThreadUtils {
      */
     @SuppressWarnings("all")
     public Future<?> submit(String id, Object objSync, @NonNull Runnable runnable, String... idWaitList) {
+        // Check if task with this ID already exists
         if (id != null) {
-            Future<?> futureChecked = getFutureById(id);
-            if (futureChecked != null) return futureChecked;
+            Future<?> existingFuture = futureMap.get(id);
+            if (existingFuture != null) {
+                sendExceptionThreadIdExited(id);
+                return existingFuture;
+            }
         }
 
-        if (id != null) if (futureMap.containsKey(id)) return futureMap.get(id);
         Future<?> future = executorService.submit(() -> {
             try {
                 if (idWaitList != null && idWaitList.length > 0) waitById(idWaitList);
@@ -60,6 +63,11 @@ public class ThreadUtils {
                 }
             } catch (Exception e) {
                 sendException(e);
+            } finally {
+                // Clean up completed task from map
+                if (id != null) {
+                    futureMap.remove(id);
+                }
             }
         });
         if (id != null) futureMap.put(id, future);
@@ -134,12 +142,7 @@ public class ThreadUtils {
 
     @Nullable
     public Future<?> getFutureById(@NonNull String id) {
-        Future<?> future = futureMap.getOrDefault(id, null);
-        if (future != null) {
-            sendExceptionThreadIdExited(id);
-            return future;
-        }
-        return null;
+        return futureMap.get(id);
     }
 
     public void sendException(@NonNull Exception e) {

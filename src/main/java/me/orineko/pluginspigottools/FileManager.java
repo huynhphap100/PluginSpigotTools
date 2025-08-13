@@ -129,11 +129,14 @@ public class FileManager extends YamlConfiguration {
 
     public FileManager save() {
         synchronized (lock) {
+            if (file == null) {
+                throw new IllegalStateException("File not initialized. Call createFile() first.");
+            }
             try {
                 save(file);
             } catch (IOException e) {
                 SchedulerProvider.get(plugin).runTask(() -> {
-                    throw new RuntimeException(e);
+                    throw new RuntimeException("Failed to save file: " + file.getName(), e);
                 });
             }
         }
@@ -143,8 +146,8 @@ public class FileManager extends YamlConfiguration {
     public FileManager setAndSave(String path, Object obj) {
         synchronized (lock) {
             this.set(path, obj);
+            save();
         }
-        save();
         return this;
     }
 

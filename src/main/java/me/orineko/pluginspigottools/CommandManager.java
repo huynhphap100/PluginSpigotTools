@@ -56,8 +56,9 @@ public abstract class CommandManager extends BukkitCommand implements CommandExe
             String[] commands = annotation.command();
             String[] names = annotation.names();
             String[] permissions = annotation.permissions();
-            List<String> permList = Stream.concat(Stream.of(commandInfo.permissions()),
-                    Stream.of(annotation.permissions())).collect(Collectors.toList());
+            List<String> permList = new ArrayList<>();
+            Collections.addAll(permList, commandInfo.permissions());
+            Collections.addAll(permList, annotation.permissions());
             boolean justPlayerUseCommand = annotation.justPlayerUseCmd();
             DataCommand dataCommand = new DataCommand(length, method);
             dataCommand.addCommands(commands);
@@ -119,10 +120,11 @@ public abstract class CommandManager extends BukkitCommand implements CommandExe
         DataCommand dataCommand = getDataCommand(label, args);
         if(sender instanceof Player) {
             Player player = (Player) sender;
-            List<String> permList = Collections.emptyList();
-            if(dataCommand == null) permList = Arrays.asList(commandInfo.permissions());
-            else permList = Stream.concat(Stream.of(commandInfo.permissions()),
-                    dataCommand.getPermissionList().stream()).collect(Collectors.toList());
+            List<String> permList = new ArrayList<>();
+            Collections.addAll(permList, commandInfo.permissions());
+            if(dataCommand != null) {
+                permList.addAll(dataCommand.getPermissionList());
+            }
             // If permission list is empty, always allow
             if(!permList.isEmpty() && !player.isOp() && permList.stream().noneMatch(player::hasPermission)) return true;
         }
@@ -152,8 +154,9 @@ public abstract class CommandManager extends BukkitCommand implements CommandExe
                         if(!(sender instanceof Player)) return true;
                         Player player = (Player) sender;
                         if(player.isOp()) return true;
-                        List<String> permList = Stream.concat(Stream.of(commandInfo.permissions()),
-                                Stream.of(t.getPermission())).collect(Collectors.toList());
+                        List<String> permList = new ArrayList<>();
+                        Collections.addAll(permList, commandInfo.permissions());
+                        Collections.addAll(permList, t.getPermission());
                         return permList.isEmpty() || permList.stream().anyMatch(player::hasPermission);
                     }).filter(t -> tabMap.getOrDefault(t, new ArrayList<>()).stream()
                             .anyMatch(c -> c.equalsIgnoreCase(cmd)))
@@ -312,7 +315,7 @@ public abstract class CommandManager extends BukkitCommand implements CommandExe
         }
 
         public void addCommands(String... commands) {
-            commandList.addAll(Arrays.stream(commands).collect(Collectors.toList()));
+            Collections.addAll(commandList, commands);
         }
 
         public void addCommands(List<String> commands) {
@@ -320,11 +323,11 @@ public abstract class CommandManager extends BukkitCommand implements CommandExe
         }
 
         public void addNames(String... names) {
-            nameList.addAll(Arrays.stream(names).collect(Collectors.toList()));
+            Collections.addAll(nameList, names);
         }
 
         public void addPermissions(String... permissions) {
-            permissionList.addAll(Arrays.stream(permissions).collect(Collectors.toList()));
+            Collections.addAll(permissionList, permissions);
         }
 
         public void callMethod(@Nonnull CommandManager commandManager, @Nonnull CommandSender sender, @Nonnull String[] args) {
@@ -366,7 +369,7 @@ public abstract class CommandManager extends BukkitCommand implements CommandExe
         }
 
         public void addLabels(String... labels) {
-            labelList.addAll(Arrays.stream(labels).collect(Collectors.toList()));
+            Collections.addAll(labelList, labels);
         }
     }
 

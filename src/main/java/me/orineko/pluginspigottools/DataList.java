@@ -27,11 +27,20 @@ public abstract class DataList<T> {
 
     @Nullable
     public T getData(@Nonnull GetData<T> getData){
-        return dataList.stream().filter(getData::getData).findAny().orElse(null);
+        synchronized(dataList) {
+            for (T data : dataList) {
+                if (getData.getData(data)) {
+                    return data;
+                }
+            }
+        }
+        return null;
     }
 
     public void removeData(@Nonnull T data){
-        dataList.remove(data);
+        synchronized(dataList) {
+            dataList.remove(data);
+        }
     }
 
     public interface GetData<T> {

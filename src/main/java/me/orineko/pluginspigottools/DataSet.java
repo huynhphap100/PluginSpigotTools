@@ -25,11 +25,20 @@ public abstract class DataSet<T> {
 
     @Nullable
     public T getData(@NonNull GetData<T> getData){
-        return dataSet.stream().filter(getData::getData).findAny().orElse(null);
+        synchronized(dataSet) {
+            for (T data : dataSet) {
+                if (getData.getData(data)) {
+                    return data;
+                }
+            }
+        }
+        return null;
     }
 
     public void removeData(@NonNull T data){
-        dataSet.remove(data);
+        synchronized(dataSet) {
+            dataSet.remove(data);
+        }
     }
 
     public interface GetData<T> {

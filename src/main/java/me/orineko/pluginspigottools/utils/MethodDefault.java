@@ -1,4 +1,4 @@
-package me.orineko.pluginspigottools;
+package me.orineko.pluginspigottools.utils;
 
 import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
@@ -11,6 +11,7 @@ import me.orineko.pluginspigottools.api.nbt.NBTApiSetup;
 import me.orineko.pluginspigottools.api.nbt.NBTApiTool;
 import me.orineko.pluginspigottools.api.placeholder.PlaceholderManager;
 import me.orineko.pluginspigottools.api.placeholder.PlaceholderSetup;
+import me.orineko.pluginspigottools.core.FileManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;

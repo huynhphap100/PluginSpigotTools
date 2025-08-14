@@ -1,6 +1,7 @@
 package me.orineko.pluginspigottools.example;
 
-import me.orineko.pluginspigottools.GuiManager;
+import me.orineko.pluginspigottools.core.GuiManager;
+import me.orineko.pluginspigottools.utils.MethodDefault;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -26,7 +27,7 @@ public class GuiExample extends GuiManager {
     public enum Key {
         KEY_B, KEY_C;
 
-        public ItemManager getItemManager(@Nonnull me.orineko.pluginspigottools.GuiManager guiManager) {
+        public ItemManager getItemManager(@Nonnull GuiManager guiManager) {
             return guiManager.getItemManager(name());
         }
     }
@@ -36,7 +37,7 @@ public class GuiExample extends GuiManager {
      if(itemManager == null) return new ItemStack(Material.AIR);
      HashMap<String, String> map = new HashMap<>();
      map.put("<player>", player.getName());
-     return me.orineko.pluginspigottools.MethodDefault.getItemReplaceValue(itemManager.getItemStack().clone(), map);
+     return MethodDefault.getItemReplaceValue(itemManager.getItemStack().clone(), map);
    }
 
 }

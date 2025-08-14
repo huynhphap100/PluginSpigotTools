@@ -1,4 +1,4 @@
-package me.orineko.pluginspigottools;
+package me.orineko.pluginspigottools.utils;
 
 import net.objecthunter.exp4j.ExpressionBuilder;
 

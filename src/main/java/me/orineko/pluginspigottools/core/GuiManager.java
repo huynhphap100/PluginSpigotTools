@@ -1,9 +1,10 @@
-package me.orineko.pluginspigottools;
+package me.orineko.pluginspigottools.core;
 
 import lombok.Getter;
 import lombok.NonNull;
 import me.orineko.pluginspigottools.api.placeholder.PlaceholderManager;
 import me.orineko.pluginspigottools.api.placeholder.PlaceholderSetup;
+import me.orineko.pluginspigottools.utils.MethodDefault;
 import me.orineko.pluginspigottools.scheduler.SchedulerProvider;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;

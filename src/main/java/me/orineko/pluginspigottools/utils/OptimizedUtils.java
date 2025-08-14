@@ -1,6 +1,5 @@
-package me.orineko.pluginspigottools;
+package me.orineko.pluginspigottools.utils;
 
-import lombok.NonNull;
 import org.bukkit.Bukkit;
 
 import javax.annotation.Nonnull;

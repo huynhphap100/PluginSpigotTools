@@ -1,4 +1,4 @@
-package me.orineko.pluginspigottools;
+package me.orineko.pluginspigottools.data;
 
 import lombok.Getter;
 import lombok.NonNull;

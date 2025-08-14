@@ -1,4 +1,4 @@
-package me.orineko.pluginspigottools;
+package me.orineko.pluginspigottools.core;
 
 import lombok.Getter;
 import lombok.Setter;

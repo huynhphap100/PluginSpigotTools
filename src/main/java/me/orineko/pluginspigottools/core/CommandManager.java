@@ -1,4 +1,4 @@
-package me.orineko.pluginspigottools;
+package me.orineko.pluginspigottools.core;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -22,7 +22,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
 public abstract class CommandManager extends BukkitCommand implements CommandExecutor, TabCompleter {
@@ -48,6 +47,10 @@ public abstract class CommandManager extends BukkitCommand implements CommandExe
     public void register() {
         boolean hasSubCommand = false;
         Set<String> firstLevelNames = new HashSet<>();
+
+        // Validate methods and show warnings
+        validateCommandMethods();
+
         for (Method method : getClass().getMethods()) {
             CommandSub annotation = method.getAnnotation(CommandSub.class);
             if (annotation == null) continue;
@@ -118,16 +121,6 @@ public abstract class CommandManager extends BukkitCommand implements CommandExe
         if (errorPermissionMessage == null) errorPermissionMessage = errorCommandMessage;
         if (justPlayerCanUseMessage == null) justPlayerCanUseMessage = errorCommandMessage;
         DataCommand dataCommand = getDataCommand(label, args);
-        if(sender instanceof Player) {
-            Player player = (Player) sender;
-            List<String> permList = new ArrayList<>();
-            Collections.addAll(permList, commandInfo.permissions());
-            if(dataCommand != null) {
-                permList.addAll(dataCommand.getPermissionList());
-            }
-            // If permission list is empty, always allow
-            if(!permList.isEmpty() && !player.isOp() && permList.stream().noneMatch(player::hasPermission)) return true;
-        }
         if (checkObjectIsNull(dataCommand, sender, errorCommandMessage) || dataCommand == null) return true;
         if (checkObjectIsFalse(getPlayerHasPermission(dataCommand, sender, args), sender, errorPermissionMessage))
             return true;
@@ -154,9 +147,7 @@ public abstract class CommandManager extends BukkitCommand implements CommandExe
                         if(!(sender instanceof Player)) return true;
                         Player player = (Player) sender;
                         if(player.isOp()) return true;
-                        List<String> permList = new ArrayList<>();
-                        Collections.addAll(permList, commandInfo.permissions());
-                        Collections.addAll(permList, t.getPermission());
+                        List<String> permList = getCombinedPermissions(t.getPermission());
                         return permList.isEmpty() || permList.stream().anyMatch(player::hasPermission);
                     }).filter(t -> tabMap.getOrDefault(t, new ArrayList<>()).stream()
                             .anyMatch(c -> c.equalsIgnoreCase(cmd)))
@@ -209,10 +200,41 @@ public abstract class CommandManager extends BukkitCommand implements CommandExe
     protected boolean getPlayerHasPermission(@Nonnull DataCommand dataCommand, @Nonnull CommandSender sender, @Nonnull String[] args) {
         if (sender instanceof Player) {
             if (sender.isOp()) return true;
-            if (dataCommand.getPermissionList().isEmpty()) return true;
-            return dataCommand.getPermissionList().stream().anyMatch(sender::hasPermission);
+
+            // Use utility method to get combined permissions
+            List<String> allPermissions = getCombinedPermissions(dataCommand);
+
+            // If no permissions required, allow access
+            if (allPermissions.isEmpty()) return true;
+
+            // Check if player has any of the required permissions
+            return allPermissions.stream().anyMatch(sender::hasPermission);
         }
         return true;
+    }
+
+    /**
+     * Get combined permissions from commandInfo and dataCommand
+     * Utility method to avoid code duplication
+     */
+    @Nonnull
+    private List<String> getCombinedPermissions(@Nonnull DataCommand dataCommand) {
+        List<String> allPermissions = new ArrayList<>();
+        Collections.addAll(allPermissions, commandInfo.permissions());
+        allPermissions.addAll(dataCommand.getPermissionList());
+        return allPermissions;
+    }
+
+    /**
+     * Get combined permissions from commandInfo and additional permissions
+     * Utility method for tab completion
+     */
+    @Nonnull
+    private List<String> getCombinedPermissions(@Nonnull String[] additionalPermissions) {
+        List<String> allPermissions = new ArrayList<>();
+        Collections.addAll(allPermissions, commandInfo.permissions());
+        Collections.addAll(allPermissions, additionalPermissions);
+        return allPermissions;
     }
 
     public void sendMessageSender(@Nonnull CommandSender sender, @Nullable String text) {
@@ -271,10 +293,80 @@ public abstract class CommandManager extends BukkitCommand implements CommandExe
     }
 
     /**
+     * Validate command methods and show warnings for missing annotations
+     */
+    private void validateCommandMethods() {
+        Method[] methods = getClass().getDeclaredMethods();
+        for (Method method : methods) {
+            // Skip if already has CommandSub annotation
+            if (method.getAnnotation(CommandSub.class) != null) continue;
+
+            // Check if method signature matches command pattern
+            if (isCommandMethod(method)) {
+                String warning = String.format(
+                    "⚠️  WARNING: Method '%s' in class '%s' has command signature but missing @CommandSub annotation!\n" +
+                    "   Signature: %s\n" +
+                    "   Suggested annotation: @CommandSub(length = 0, names = {\"%s\"})",
+                    method.getName(),
+                    getClass().getSimpleName(),
+                    getMethodSignature(method),
+                    method.getName().toLowerCase()
+                );
+                System.err.println(warning);
+
+                // Also log to plugin logger if available
+                try {
+                    if (commandInfo != null) {
+                        org.bukkit.Bukkit.getLogger().warning(warning);
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+    }
+
+    /**
+     * Check if method has command signature
+     */
+    private boolean isCommandMethod(Method method) {
+        // Must be public
+        if (!java.lang.reflect.Modifier.isPublic(method.getModifiers())) return false;
+
+        // Must return void
+        if (!method.getReturnType().equals(void.class)) return false;
+
+        // Must have exactly 2 parameters
+        Class<?>[] params = method.getParameterTypes();
+        if (params.length != 2) return false;
+
+        // Second parameter must be String[]
+        if (!params[1].equals(String[].class)) return false;
+
+        // First parameter must be CommandSender or Player
+        return org.bukkit.command.CommandSender.class.isAssignableFrom(params[0]) ||
+               org.bukkit.entity.Player.class.isAssignableFrom(params[0]);
+    }
+
+    /**
+     * Get method signature as string
+     */
+    private String getMethodSignature(Method method) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("public void ").append(method.getName()).append("(");
+        Class<?>[] params = method.getParameterTypes();
+        for (int i = 0; i < params.length; i++) {
+            if (i > 0) sb.append(", ");
+            sb.append(params[i].getSimpleName());
+        }
+        sb.append(")");
+        return sb.toString();
+    }
+
+    /**
      * Annotation for main command info.
      */
     @Target(ElementType.TYPE)
     @Retention(RetentionPolicy.RUNTIME)
+    @SuppressWarnings("unused") // Suppress unused warning for annotation
     public @interface CommandInfo {
         String[] aliases() default {};
         String[] permissions() default {};
@@ -282,15 +374,32 @@ public abstract class CommandManager extends BukkitCommand implements CommandExe
 
     /**
      * Annotation for subcommand info.
+     * Use this annotation on methods with signature:
+     * - public void methodName(CommandSender sender, String[] args)
+     * - public void methodName(Player player, String[] args)
+     *
+     * Methods with this annotation are automatically called by CommandManager
+     * and should not show "unused" warnings in IDE.
      */
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
+    @SuppressWarnings("unused") // Suppress unused warning for annotation
     public @interface CommandSub {
         int length();
         String[] command() default {};
         String[] names() default {};
         String[] permissions() default {};
         boolean justPlayerUseCmd() default false;
+    }
+
+    /**
+     * Annotation to mark command methods that are used by reflection
+     * Use this on command methods to suppress "unused" warnings
+     */
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface UsedByReflection {
+        String value() default "Used by CommandManager reflection system";
     }
 
     /**

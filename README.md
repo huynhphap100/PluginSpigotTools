@@ -118,7 +118,7 @@ Items:
 Create a class extending `GuiManager`:
 
 ```java
-import me.orineko.pluginspigottools.GuiManager;
+
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -150,9 +150,9 @@ public class GuiExample extends GuiManager {
         }
     }
 
-    public ItemStack getItemC(@Nonnull Player player){
+    public ItemStack getItemC(@Nonnull Player player) {
         ItemManager itemManager = Key.KEY_C.getItemManager(this);
-        if(itemManager == null) return new ItemStack(Material.AIR);
+        if (itemManager == null) return new ItemStack(Material.AIR);
         HashMap<String, String> map = new HashMap<>();
         map.put("<player>", player.getName());
         return me.orineko.pluginspigottools.MethodDefault.getItemReplaceValue(itemManager.getItemStack().clone(), map);

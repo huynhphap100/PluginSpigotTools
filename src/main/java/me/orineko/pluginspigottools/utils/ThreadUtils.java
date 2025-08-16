@@ -100,10 +100,7 @@ public class ThreadUtils {
         for (String t : idList) {
             try {
                 Future<?> future = futureMap.getOrDefault(t, null);
-                if (future == null) {
-                    sendExceptionThreadIdNotExist(t);
-                    return;
-                }
+                if (future == null) continue;
                 future.get();
             } catch (Exception e) {
                 sendException(e);
@@ -121,10 +118,7 @@ public class ThreadUtils {
             try {
                 String key = futureMap.keySet().stream().filter(v -> v.startsWith("MULTI_" + t)).findAny().orElse(null);
                 Future<?> future = futureMap.getOrDefault(key, null);
-                if (future == null) {
-                    sendExceptionThreadIdNotExist(t);
-                    return;
-                }
+                if (future == null) continue;
                 future.get();
             } catch (Exception e) {
                 sendException(e, "Id " + Arrays.toString(idList) + " is error");

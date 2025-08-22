@@ -307,7 +307,7 @@ public class MethodDefault {
         if (meta == null) return;
         String name = meta.getDisplayName();
         List<String> lore = (meta.getLore() != null) ? meta.getLore() : new ArrayList<>();
-        name = placeholderManager.setPlaceholders(player, name);
+        name = (name != null) ? placeholderManager.setPlaceholders(player, name) : null;
         lore = placeholderManager.setPlaceholders(player, lore);
         meta.setDisplayName(name);
         meta.setLore(lore);

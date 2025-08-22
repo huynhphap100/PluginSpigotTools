@@ -14,6 +14,8 @@ public class NBTApiTool {
         if(itemStack.getType().equals(Material.AIR)) return itemStack;
         NBT.modify(itemStack, nbt -> {
             Set<String> keySet = new HashSet<>(nbt.getKeys());
+            keySet.remove("display");
+            keySet.remove("ench");
             keySet.forEach(nbt::removeKey);
         });
         return itemStack;

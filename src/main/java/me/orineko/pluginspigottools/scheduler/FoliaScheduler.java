@@ -160,7 +160,14 @@ public class FoliaScheduler implements Scheduler {
             for (Object arg : extraArgs) params.add(arg.getClass().isPrimitive() ? arg.getClass() : long.class);
 
             Method method = findMethod(clazz, methodName, params.size());
-            Object scheduled = method.invoke(scheduler, combineArgs(plugin, consumer, extraArgs));
+            Object scheduled;
+            if(extraArgs.length == 1) {
+                scheduled = method.invoke(scheduler, combineArgs(plugin, consumer, extraArgs[0]));
+            } else if(extraArgs.length == 2) {
+                scheduled = method.invoke(scheduler, combineArgs(plugin, consumer, extraArgs[0], extraArgs[1]));
+            } else {
+                scheduled = method.invoke(scheduler, combineArgs(plugin, consumer));
+            }
             tasks.add(scheduled);
             return scheduled;
         } catch (Exception e) {
@@ -189,7 +196,14 @@ public class FoliaScheduler implements Scheduler {
             for (Object arg : extraArgs) params.add(long.class);
 
             Method method = findMethod(clazz, methodName, params.size());
-            Object scheduled = method.invoke(scheduler, combineArgs(plugin, location, consumer, extraArgs));
+            Object scheduled;
+            if(extraArgs.length == 1) {
+                scheduled = method.invoke(scheduler, combineArgs(plugin, location, consumer, extraArgs[0]));
+            } else if(extraArgs.length == 2) {
+                scheduled = method.invoke(scheduler, combineArgs(plugin, location, consumer, extraArgs[0], extraArgs[1]));
+            } else {
+                scheduled = method.invoke(scheduler, combineArgs(plugin, location, consumer));
+            }
             tasks.add(scheduled);
             return scheduled;
         } catch (Exception e) {

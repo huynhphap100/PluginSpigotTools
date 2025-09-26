@@ -15,6 +15,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import java.util.*;
+
 public class FoliaScheduler implements Scheduler {
     private final Plugin plugin;
     private final Set<Object> tasks = Collections.synchronizedSet(new HashSet<>());
@@ -23,174 +25,82 @@ public class FoliaScheduler implements Scheduler {
         this.plugin = plugin;
     }
 
-    @Override
-    public Object runTaskTimer(@NonNull Runnable task, long delay, long period) {
-        if (delay <= 0) delay = 1;
-        if (period <= 0) period = 1;
-        try {
-            Class<?> bukkitClass = Class.forName("org.bukkit.Bukkit");
-            Method getGlobalRegionSchedulerMethod = bukkitClass.getMethod("getGlobalRegionScheduler");
-            Object regionScheduler = getGlobalRegionSchedulerMethod.invoke(null);
-            Class<?> regionSchedulerClass = regionScheduler.getClass();
-            Method runAtFixedRateMethod = regionSchedulerClass.getMethod("runAtFixedRate", Plugin.class, Consumer.class, long.class, long.class);
-            Class<?> consumerClass = Class.forName("java.util.function.Consumer");
-            Object consumer = Proxy.newProxyInstance(
-                    consumerClass.getClassLoader(),
-                    new Class[]{consumerClass},
-                    (proxy, method, args) -> {
-                        if (method.getName().equals("accept")) {
-                            task.run();
-                        }
-                        return null;
-                    }
-            );
-            return runAtFixedRateMethod.invoke(regionScheduler, plugin, consumer, delay, period);
-
-        } catch (Exception e) {
-            throw new RuntimeException("Error Folia Schedule", e);
-        }
+    private Object getGlobalRegionScheduler() throws Exception {
+        Class<?> bukkitClass = Class.forName("org.bukkit.Bukkit");
+        Method method = bukkitClass.getMethod("getGlobalRegionScheduler");
+        return method.invoke(null);
     }
 
+    private Object getRegionScheduler() throws Exception {
+        Class<?> bukkitClass = Class.forName("org.bukkit.Bukkit");
+        Method method = bukkitClass.getMethod("getRegionScheduler");
+        return method.invoke(null);
+    }
+
+    // ===================== GLOBAL (NO LOCATION) ===================== //
+
     @Override
-    public Object runTaskTimerAsync(@NonNull Runnable task, long delay, long period) {
-        if (delay <= 0) delay = 1;
-        if (period <= 0) period = 1;
-        Location location = getLocation();
-        if (location == null) return new Object();
-        try {
-            Class<?> bukkitClass = Class.forName("org.bukkit.Bukkit");
-            Method getRegionSchedulerMethod = bukkitClass.getMethod("getRegionScheduler");
-            Object regionScheduler = getRegionSchedulerMethod.invoke(null); // static method
-            Class<?> regionSchedulerClass = regionScheduler.getClass();
-            Class<?> consumerClass = Class.forName("java.util.function.Consumer");
-            Object consumer = Proxy.newProxyInstance(
-                    consumerClass.getClassLoader(),
-                    new Class[]{consumerClass},
-                    (proxy, method, args) -> {
-                        if (method.getName().equals("accept")) {
-                            task.run();
-                        }
-                        return null;
-                    }
-            );
-            Method runAtFixedRateMethod = regionSchedulerClass.getMethod("runAtFixedRate", Plugin.class, Location.class, consumerClass, long.class, long.class);
-            Object scheduleTask = runAtFixedRateMethod.invoke(regionScheduler, plugin, location, consumer, delay, period);
-            tasks.add(scheduleTask);
-            return scheduleTask;
-        } catch (Exception e) {
-            throw new RuntimeException("Error Folia Schedule", e);
-        }
+    public Object runTask(@NonNull Runnable task) {
+        return runGlobal0("run", task);
     }
 
     @Override
     public Object runTaskLater(@NonNull Runnable task, long delay) {
         if (delay <= 0) delay = 1;
-        try {
-            Class<?> bukkitClass = Class.forName("org.bukkit.Bukkit");
-            Method getGlobalRegionSchedulerMethod = bukkitClass.getMethod("getGlobalRegionScheduler");
-            Object regionScheduler = getGlobalRegionSchedulerMethod.invoke(null); // static method
-            Class<?> regionSchedulerClass = regionScheduler.getClass();
-            Class<?> consumerClass = Class.forName("java.util.function.Consumer");
-            Object consumer = Proxy.newProxyInstance(
-                    consumerClass.getClassLoader(),
-                    new Class[]{consumerClass},
-                    (proxy, method, args) -> {
-                        if (method.getName().equals("accept")) {
-                            task.run();
-                        }
-                        return null;
-                    }
-            );
-            Method runDelayedMethod = regionSchedulerClass.getMethod("runDelayed", Plugin.class, consumerClass, long.class);
-            return runDelayedMethod.invoke(regionScheduler, plugin, consumer, delay);
-        } catch (Exception e) {
-            throw new RuntimeException("Error Folia Schedule", e);
-        }
+        return runGlobal0("runDelayed", task, delay);
+    }
+
+    @Override
+    public Object runTaskTimer(@NonNull Runnable task, long delay, long period) {
+        if (delay <= 0) delay = 1;
+        if (period <= 0) period = 1;
+        return runGlobal0("runAtFixedRate", task, delay, period);
+    }
+
+    // ===================== REGION (ASYNC - WITH LOCATION) ===================== //
+
+    @Override
+    public Object runTaskAsync(@NonNull Runnable task, @NonNull Location location) {
+        return runRegion0("run", task, location);
+    }
+
+    @Override
+    public Object runTaskLaterAsync(@NonNull Runnable task, @NonNull Location location, long delay) {
+        if (delay <= 0) delay = 1;
+        return runRegion0("runDelayed", task, location, delay);
+    }
+
+    @Override
+    public Object runTaskTimerAsync(@NonNull Runnable task, @NonNull Location location, long delay, long period) {
+        if (delay <= 0) delay = 1;
+        if (period <= 0) period = 1;
+        return runRegion0("runAtFixedRate", task, location, delay, period);
+    }
+
+    // ===================== REGION (ASYNC - RANDOM LOCATION) ===================== //
+
+    @Override
+    public Object runTaskAsync(@NonNull Runnable task) {
+        Location location = getRandomLocation();
+        if (location == null) return new Object();
+        return runTaskAsync(task, location);
     }
 
     @Override
     public Object runTaskLaterAsync(@NonNull Runnable task, long delay) {
-        if (delay <= 0) delay = 1;
-        Location location = getLocation();
+        Location location = getRandomLocation();
         if (location == null) return new Object();
-        try {
-            Class<?> bukkitClass = Class.forName("org.bukkit.Bukkit");
-            Method getRegionSchedulerMethod = bukkitClass.getMethod("getRegionScheduler");
-            Object globalRegionScheduler = getRegionSchedulerMethod.invoke(null); // static method
-            Class<?> globalRegionSchedulerClass = globalRegionScheduler.getClass();
-            Class<?> consumerClass = Class.forName("java.util.function.Consumer");
-            Object consumer = Proxy.newProxyInstance(
-                    consumerClass.getClassLoader(),
-                    new Class[]{consumerClass},
-                    (proxy, method, args) -> {
-                        if (method.getName().equals("accept")) {
-                            task.run();
-                        }
-                        return null;
-                    }
-            );
-            Method runDelayedMethod = globalRegionSchedulerClass.getMethod("runDelayed", Plugin.class, consumerClass, long.class);
-            Object scheduleTask = runDelayedMethod.invoke(globalRegionScheduler, plugin, consumer, delay);
-            tasks.add(scheduleTask);
-            return scheduleTask;
-        } catch (Exception e) {
-            throw new RuntimeException("Error Folia Schedule", e);
-        }
+        return runTaskLaterAsync(task, location, delay);
     }
 
     @Override
-    public Object runTask(@NonNull Runnable task) {
-        try {
-            Class<?> bukkitClass = Class.forName("org.bukkit.Bukkit");
-            Method getGlobalRegionSchedulerMethod = bukkitClass.getMethod("getGlobalRegionScheduler");
-            Object globalRegionScheduler = getGlobalRegionSchedulerMethod.invoke(null); // static method
-            Class<?> globalRegionSchedulerClass = globalRegionScheduler.getClass();
-            Class<?> consumerClass = Class.forName("java.util.function.Consumer");
-            Object consumer = Proxy.newProxyInstance(
-                    consumerClass.getClassLoader(),
-                    new Class[]{consumerClass},
-                    (proxy, method, args) -> {
-                        if (method.getName().equals("accept")) {
-                            task.run();
-                        }
-                        return null;
-                    }
-            );
-            Method runMethod = globalRegionSchedulerClass.getMethod("run", Plugin.class, consumerClass);
-            return runMethod.invoke(globalRegionScheduler, plugin, consumer);
-        } catch (Exception e) {
-            throw new RuntimeException("Error Folia Schedule", e);
-        }
+    public Object runTaskTimerAsync(@NonNull Runnable task, long delay, long period) {
+        Location location = getRandomLocation();
+        if (location == null) return new Object();
+        return runTaskTimerAsync(task, location, delay, period);
     }
 
-    @Override
-    public Object runTaskAsync(@NonNull Runnable task) {
-        Location location = getLocation();
-        if (location == null) return new Object();
-        try {
-            Class<?> bukkitClass = Class.forName("org.bukkit.Bukkit");
-            Method getRegionSchedulerMethod = bukkitClass.getMethod("getRegionScheduler");
-            Object regionScheduler = getRegionSchedulerMethod.invoke(null); // static method
-            Class<?> regionSchedulerClass = regionScheduler.getClass();
-            Class<?> consumerClass = Class.forName("java.util.function.Consumer");
-            Object consumer = Proxy.newProxyInstance(
-                    consumerClass.getClassLoader(),
-                    new Class[]{consumerClass},
-                    (proxy, method, args) -> {
-                        if (method.getName().equals("accept")) {
-                            task.run();
-                        }
-                        return null;
-                    }
-            );
-            Method runMethod = regionSchedulerClass.getMethod("run", Plugin.class, Location.class, consumerClass);
-            Object scheduleTask = runMethod.invoke(regionScheduler, plugin, location, consumer);
-            tasks.add(scheduleTask);
-            return scheduleTask;
-        } catch (Exception e) {
-            throw new RuntimeException("Error Folia Schedule", e);
-        }
-    }
+    // ===================== CANCEL ===================== //
 
     @Override
     public void cancelAllTasks() {
@@ -198,23 +108,23 @@ public class FoliaScheduler implements Scheduler {
             Class<?> scheduledTaskClass = Class.forName("io.papermc.paper.threadedregions.scheduler.ScheduledTask");
             Method isCancelledMethod = scheduledTaskClass.getMethod("isCancelled");
             Method cancelMethod = scheduledTaskClass.getMethod("cancel");
+
             tasks.removeIf(task -> {
                 if (!scheduledTaskClass.isInstance(task)) return true;
                 try {
                     boolean isCancelled = (boolean) isCancelledMethod.invoke(task);
-                    if (!isCancelled) {
-                        cancelMethod.invoke(task);
-                    }
+                    if (!isCancelled) cancelMethod.invoke(task);
                 } catch (Exception e) {
                     throw new RuntimeException("Error canceling Folia ScheduledTask", e);
                 }
                 return true;
             });
-            Class<?> bukkitClass = Class.forName("org.bukkit.Bukkit");
-            Method getGlobalRegionSchedulerMethod = bukkitClass.getMethod("getGlobalRegionScheduler");
-            Object globalScheduler = getGlobalRegionSchedulerMethod.invoke(null);
+
+            // Cancel global tasks
+            Object globalScheduler = getGlobalRegionScheduler();
             Method cancelTasksMethod = globalScheduler.getClass().getMethod("cancelTasks", Plugin.class);
             cancelTasksMethod.invoke(globalScheduler, plugin);
+
         } catch (Exception e) {
             throw new RuntimeException("Error during cancelAllTasks", e);
         }
@@ -233,23 +143,90 @@ public class FoliaScheduler implements Scheduler {
         }
     }
 
+    // ===================== INTERNAL HELPERS ===================== //
+
+    private Object runGlobal0(String methodName, Runnable task, Object... extraArgs) {
+        try {
+            Object scheduler = getGlobalRegionScheduler();
+            Class<?> clazz = scheduler.getClass();
+            Class<?> consumerClass = Consumer.class;
+            Object consumer = Proxy.newProxyInstance(
+                    consumerClass.getClassLoader(),
+                    new Class[]{consumerClass},
+                    (proxy, m, args) -> {
+                        if (m.getName().equals("accept")) task.run();
+                        return null;
+                    }
+            );
+
+            List<Class<?>> params = new ArrayList<>();
+            params.add(Plugin.class);
+            params.add(consumerClass);
+            for (Object arg : extraArgs) params.add(arg.getClass().isPrimitive() ? arg.getClass() : long.class);
+
+            Method method = findMethod(clazz, methodName, params.size());
+            Object scheduled = method.invoke(scheduler, combineArgs(plugin, consumer, extraArgs));
+            tasks.add(scheduled);
+            return scheduled;
+        } catch (Exception e) {
+            throw new RuntimeException("Error Folia Global Schedule", e);
+        }
+    }
+
+    private Object runRegion0(String methodName, Runnable task, Location location, Object... extraArgs) {
+        try {
+            Object scheduler = getGlobalRegionScheduler();
+            Class<?> clazz = scheduler.getClass();
+            Class<?> consumerClass = Consumer.class;
+            Object consumer = Proxy.newProxyInstance(
+                    consumerClass.getClassLoader(),
+                    new Class[]{consumerClass},
+                    (proxy, m, args) -> {
+                        if (m.getName().equals("accept")) task.run();
+                        return null;
+                    }
+            );
+
+            List<Class<?>> params = new ArrayList<>();
+            params.add(Plugin.class);
+            params.add(Location.class);
+            params.add(consumerClass);
+            for (Object arg : extraArgs) params.add(long.class);
+
+            Method method = findMethod(clazz, methodName, params.size());
+            Object scheduled = method.invoke(scheduler, combineArgs(plugin, location, consumer, extraArgs));
+            tasks.add(scheduled);
+            return scheduled;
+        } catch (Exception e) {
+            throw new RuntimeException("Error Folia Region Schedule", e);
+        }
+    }
+
+    private Method findMethod(Class<?> clazz, String name, int paramCount) {
+        for (Method m : clazz.getMethods()) {
+            if (m.getName().equals(name) && m.getParameterCount() == paramCount) return m;
+        }
+        throw new RuntimeException("Method not found: " + name + " with " + paramCount + " params");
+    }
+
+    private Object[] combineArgs(Object... args) {
+        return args;
+    }
+
     @Nullable
-    private Location getLocation() {
+    private Location getRandomLocation() {
         if (Bukkit.getWorlds().isEmpty()) return null;
 
         Random random = new Random();
         World world = Bukkit.getWorlds().get(0);
-        int radius = 160000; // block radius from (0, 0)
+        int radius = 160000;
 
-        // Random block coordinates
         int blockX = random.nextInt(radius * 2) - radius;
         int blockZ = random.nextInt(radius * 2) - radius;
-
-        // Random Y within build height range
-        int minY = world.getMinHeight();       // Usually -64
-        int maxY = world.getMaxHeight();       // Usually 319
+        int minY = world.getMinHeight();
+        int maxY = world.getMaxHeight();
         int blockY = random.nextInt(maxY - minY) + minY;
 
         return new Location(world, blockX + 0.5, blockY, blockZ + 0.5);
     }
-} 
+}

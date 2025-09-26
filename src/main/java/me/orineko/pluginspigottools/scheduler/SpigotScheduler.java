@@ -2,6 +2,7 @@ package me.orineko.pluginspigottools.scheduler;
 
 import lombok.NonNull;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -36,6 +37,21 @@ public class SpigotScheduler implements Scheduler {
     @Override
     public Object runTaskAsync(@NonNull Runnable task) {
         return Bukkit.getScheduler().runTaskAsynchronously(plugin, task);
+    }
+
+    @Override
+    public Object runTaskTimerAsync(@NonNull Runnable task, @NonNull Location location, long delay, long period) {
+        return runTaskTimerAsync(task, delay, period);
+    }
+
+    @Override
+    public Object runTaskLaterAsync(@NonNull Runnable task, @NonNull Location location, long delay) {
+        return runTaskLaterAsync(task, delay);
+    }
+
+    @Override
+    public Object runTaskAsync(@NonNull Runnable task, @NonNull Location location) {
+        return runTaskAsync(task);
     }
 
     @Override

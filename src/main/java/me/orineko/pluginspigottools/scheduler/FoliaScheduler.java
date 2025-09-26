@@ -9,13 +9,8 @@ import org.bukkit.plugin.Plugin;
 import javax.annotation.Nullable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
-import java.util.function.Consumer;
-
 import java.util.*;
+import java.util.function.Consumer;
 
 public class FoliaScheduler implements Scheduler {
     private final Plugin plugin;
@@ -175,7 +170,7 @@ public class FoliaScheduler implements Scheduler {
 
     private Object runRegion0(String methodName, Runnable task, Location location, Object... extraArgs) {
         try {
-            Object scheduler = getGlobalRegionScheduler();
+            Object scheduler = getRegionScheduler();
             Class<?> clazz = scheduler.getClass();
             Class<?> consumerClass = Consumer.class;
             Object consumer = Proxy.newProxyInstance(
